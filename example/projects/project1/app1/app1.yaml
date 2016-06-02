@@ -1,0 +1,65 @@
+kind: List
+apiVersion: v1
+items:
+
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: %{application}-%{environment}
+    labels:
+      name: %{application}-%{environment}
+
+
+- kind: Namespace
+  apiVersion: v1
+  metadata:
+    name: %{application}-%{environment}
+    labels:
+      name: %{application}-%{environment}
+
+- kind: ReplicationController
+  apiVersion: v1
+  metadata:
+    labels:
+      app: %{application}-%{environment}-rc
+    name: %{application}-%{environment}-rc
+    namespace: %{application}-%{environment}
+  spec:
+    replicas: 3
+    selector:
+      app: nginx 
+    template:
+      metadata:
+        labels:
+          app: nginx
+      spec:
+        containers:
+        - name: nginx
+          image: %{image_name}
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80 
+            protocol: TCP
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "256m"
+            limits:
+              memory: "256Mi"
+              cpu: "256m"
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    labels:
+      app: %{application}-%{environment}-svc
+    name: %{application}-%{environment}-svc
+    namespace: %{application}-%{environment}
+  spec:
+    type: NodePort
+    ports:
+    - port: 80
+      nodePort: %{nodeport}
+      protocol: TCP
+    selector:
+      app: nginx

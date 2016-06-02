@@ -1,0 +1,109 @@
+#!/bin/bash
+
+source /opt/k8comp/k8comp.conf
+
+# Define the location of the locations
+deployments=${k8comp_home}/deployments/${project}/${application}-${environment}/${application}-`date +%Y-%m-%d-%H-%M-%S`
+
+# Location of the most current deployment/test
+latest_deployment=${k8comp_home}/deployments/${project}/${application}-${environment}/latest
+
+programname=$0
+
+usage() {
+  echo ""
+  echo -e "\x1b[32m Usage: $programname [-h | -p <project_name> -a <application> -e <environment> ] \x1b[0m"
+  echo -e "\x1b[32m  -h | --help :                           Display usage information. \x1b[0m"
+  echo -e "\x1b[32m  -p | --project <project_name> :         Project name as specified on the projects folder. Configuration specified in k8comp.conf. Current path ${projects_path} \x1b[0m"
+  echo -e "\x1b[32m  -a | --application <application> :      The name of the application which need to be deployed. ${projects_path}/<project>/<application>/<application>.yaml \x1b[0m"
+  echo -e "\x1b[32m  -e | --environment <environment> :      The environment will be checked form hiera. If no values are found in hiera the variables will not be replaced. \x1b[0m"
+  echo ""
+  echo -e "\x1b[32m Example:
+
+  k8comp -p project1 -a app1 -e development | kubectl create -f - 
+  k8comp -p project1 -a app1 -e development | kubectl apply -f - 
+
+  Dry run:
+
+  k8comp -p project1 -a app1 -e development\x1b[0m"
+  echo ""
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -p|--project)
+      if [ -n "$2" ]; then
+        project=$2
+        shift
+      else
+        usage
+        exit 1
+      fi
+    ;;
+    -a|--application)
+      if [ -n "$2" ]; then
+        application=$2
+        shift
+      else
+        usage
+        exit 1
+      fi
+    ;;
+    -e|--environment)
+      if [ -n "$2" ]; then
+        environment=$2
+        shift
+      else
+        usage
+        exit 1
+      fi
+    ;;
+    -h|--help)
+      usage
+      exit 0
+    ;;
+    *)
+      usage
+      exit 1
+    ;;
+  esac
+  shift
+done
+
+if [ -z ${environment} ] || [ -z ${application} ] || [ -z ${project} ]
+	then
+	usage
+	exit 1
+fi
+
+if [ ! -f ${projects_path}/${project}/${application}/${application}.yaml ]
+ then
+  echo ""
+  echo -e "\033[31m[ERROR]   Main application YAML file not found in ${projects_path}\033[0m"
+  echo ""
+  exit 1
+fi
+
+mkdir -p ${deployments}
+ln -sfn ${deployments} ${latest_deployment}
+rsync -av ${projects_path}/${project}/${application}/${application}.yaml ${deployments} > /dev/null
+
+sed -i "s|%{application}|${application}|g" ${deployments}/${application}.yaml
+sed -i "s|%{environment}|${environment}|g" ${deployments}/${application}.yaml
+
+for variable in `grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${projects_path}/${project}/${application}/${application}.yaml | sort | uniq | sed 's|[%{}]||g'`
+do
+  if [ -z `hiera ${variable} application=${application} environment=${environment}` ]; 
+   then
+   echo ""
+   echo -e "\033[31m${variable} not found in hiera\033[0m"
+   echo ""
+  exit 1
+  else
+   sed -i "s|%{${variable}}|`hiera ${variable} application=${application} environment=${environment}`|g" ${deployments}/${application}.yaml
+  fi
+done
+
+cat ${deployments}/${application}.yaml
+
+ls -td --group-directories-first ${k8comp_home}/deployments/${project}/${application}-${environment}/${application}-* | tail -n +${deployments_history} | xargs -I % rm -rf %

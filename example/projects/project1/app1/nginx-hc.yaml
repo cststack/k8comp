@@ -1,0 +1,58 @@
+kind: List
+apiVersion: v1
+items:
+
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: app1-development
+    labels:
+      name: app1-development
+
+- kind: Namespace
+  apiVersion: v1
+  metadata:
+    name: app1-development
+    labels:
+      name: app1-development
+
+- kind: ReplicationController
+  apiVersion: v1
+  metadata:
+    labels:
+      app: nginx-controller
+    name: nginx-controller
+    namespace: app1-development
+  spec:
+    replicas: 2
+    selector:
+      app: nginx 
+    template:
+      metadata:
+        labels:
+          app: nginx
+      spec:
+        containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80 
+            protocol: TCP
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    labels:
+      app: nginx
+    name: nginx
+    namespace: app1-development
+  spec:
+    type: NodePort
+    ports:
+    - port: 80
+      nodePort: 31500 
+      protocol: TCP
+    selector:
+      app: nginx
+

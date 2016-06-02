@@ -1,0 +1,10 @@
+---
+:backends:
+        - yaml
+:yaml:
+                :datadir: /opt/k8comp/hieradata
+
+:hierarchy:
+        - apps/%{application}/%{environment}
+        - apps/%{application}
+        - common
