@@ -16,7 +16,7 @@ usage() {
   echo -e "\x1b[32m  -h | --help :                           Display usage information. \x1b[0m"
   echo -e "\x1b[32m  -p | --project <project_name> :         Project name as specified on the projects folder. Configuration specified in k8comp.conf. Current path ${projects_path} \x1b[0m"
   echo -e "\x1b[32m  -a | --application <application> :      The name of the application which need to be deployed. ${projects_path}/<project>/<application>/<application>.yaml \x1b[0m"
-  echo -e "\x1b[32m  -e | --environment <environment> :      The environment will be checked form hiera. If no values are found in hiera the variables will not be replaced. \x1b[0m"
+  echo -e "\x1b[32m  -e | --environment <environment> :      The environment will be checked from hiera. If no values are found in hiera the variables will not be replaced. \x1b[0m"
   echo ""
   echo -e "\x1b[32m Example:
 
