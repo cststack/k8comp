@@ -8,6 +8,7 @@ Separate the variables from the code for kubernetes and docker-compose.
 2. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
 3. [Usage - Configuration options and additional functionality](#usage)
+    * [Yaml variables](#yaml-variables)
 4. [To do](#to-do)
 
 ## Overview
@@ -94,6 +95,16 @@ Example:
  k8comp -p project1 -a app1 -e development
 ```
 
+### Yaml variables
+Replace the configs which are environment specific with
+```
+ %{variable_name}
+```
+
+On the hieradata file hierarchy add 
+```
+variable_name: value 
+```
 ## Limitations
 
 Tested only with CentOS 7 and kubernetes 1.2.0.
