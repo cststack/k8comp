@@ -2,12 +2,6 @@
 
 source /opt/k8comp/k8comp.conf
 
-# Define the location of the locations
-deployments=${k8comp_home}/deployments/${project}/${application}-${environment}/${application}-`date +%Y-%m-%d-%H-%M-%S`
-
-# Location of the most current deployment/test
-latest_deployment=${k8comp_home}/deployments/${project}/${application}-${environment}/latest
-
 programname=$0
 
 usage() {
@@ -69,6 +63,12 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+# Define the location of the locations
+deployments=${k8comp_home}/deployments/${project}/${application}-${environment}/${application}-`date +%Y-%m-%d-%H-%M-%S`
+
+# Location of the most current deployment/test
+latest_deployment=${k8comp_home}/deployments/${project}/${application}-${environment}/latest
 
 if [ -z ${environment} ] || [ -z ${application} ] || [ -z ${project} ]
 	then
