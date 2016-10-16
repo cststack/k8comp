@@ -3,26 +3,37 @@ usage() {
  message_green "
  Usage: $programname [-h | -p <project_name> -a <application> -e <environment> ]
 
+ Supported formats: yaml, yml, json
+
  Mandatory variables -p <project_name>
 
-  -h | --help :                           Display usage information.
-  -p | --project <project_name> :         Project name as specified on the projects folder. Configuration specified in k8comp.conf.
-                                          Current projects path ${projects_path}.
-                                          If only <project> or <project> and <environment> the dpeloyment will be
-                                          from ${projects_path}/<project>.* file
+ -h | --help :                           Display usage information.
+ -p | --project <project_name> :         Project name as specified on the projects folder.
+                                         Configuration specified in k8comp.conf.
+                                         Current projects path ${projects_path}.
+                                         If only <project> or <project> and <environment> are
+                                         specified the deployment will be from
+                                         ${projects_path}/<project>.* file
 
-  -a | --application <application> :      The name of the application which need to be deployed.
-                                          <application> file has priority over <application> folder.
-                                          If ${projects_path}/<project>/<application>.* file is present the deployment will be from that file.
-                                          If there is no file in the above mentioned location the deployment will be from
-                                          ${projects_path}/<project>/<application>/ folder.
-                                          There are no naming restrictions for the files from ${projects_path}/<project>/<application>/ folder.
-                                          If no <application> will be specified in the cmd the deployment will be from ${projects_path}/<project>.* file.
+ -a | --application <application> :      The name of the application which need to be deployed.
+                                         <application> file has priority over <application> folder.
+                                         If ${projects_path}/<project>/<application>.* file is present
+                                         the deployment will be from that file.
+                                         If there is no file in the above mentioned location the
+                                         deployment will be from ${projects_path}/<project>/<application>/ folder.
+                                         There are no naming restrictions for the files from
+                                         ${projects_path}/<project>/<application>/ folder.
+                                         If no <application> is specified in the cmd the deployment
+                                         will be from ${projects_path}/<project>.* file.
 
-  -e | --environment <environment> :      The environment will be checked from hiera. If no values are found in hiera the variables will not be replaced.
+ -e | --environment <environment> :      The environment will be checked from hiera. If no values are
+                                         found in hiera the variables will not be replaced.
 
-  -x | --xtra <variable> :                The variable specified on the cmd run will be used to update a value on the final deployment file.
-                                          This will have priority over hiera value. Is not mandatory to be specified. The format is variable=value.
+ -x | --xtra <variable> :                The variable specified on the cmd run will be used to update
+                                         a value on the final deployment file.
+                                         This will have priority over hiera value. Is not mandatory
+                                         to be specified.
+                                         The format is variable=value.
 
  Examples:
 
