@@ -1,0 +1,19 @@
+---
+:backends:
+        - yaml
+:yaml:
+                :datadir: /opt/k8comp/hieradata
+
+# examples. There are more hierachies which can be created based on the requirements.
+:hierarchy:
+        - apps/%{project}/%{application}/%{environment}
+        - apps/%{project}/%{application}
+        - apps/%{project}
+
+        - apps/%{project}-%{application}/%{environment}
+        - apps/%{project}-%{application}
+        - apps/%{project}-%{environment}
+        - apps/%{project}
+        - apps/%{application}
+
+        - common
