@@ -47,6 +47,7 @@ while [ $# -gt 0 ]; do
       if [ -n "$2" ]; then
         project=$2
         hrp="project=$2"
+        hrall+="${hrp} "
         shift
       else
         usage
@@ -57,6 +58,7 @@ while [ $# -gt 0 ]; do
       if [ -n "$2" ]; then
         application=$2
         hra="application=$2"
+        hrall+="${hra} "
         shift
       else
         usage
@@ -67,6 +69,15 @@ while [ $# -gt 0 ]; do
       if [ -n "$2" ]; then
         environment=$2
         hre="environment=$2"
+        hrall+="${hre} "
+        shift
+      fi
+    ;;
+    -l|--location)
+      if [ -n "$2" ]; then
+        location=$2
+        hrl="location=$2"
+        hrall+="${hrl} "
         shift
       fi
     ;;
@@ -91,24 +102,21 @@ check_vars() {
 }
 
 set_file() {
-# if project, application and environment or only project and application declared
-  if [[ "${input[@]}" =~ "a" && "${input[@]}" =~ "e" ]] || [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
+# if project, application and any other argument is declared
+  if [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
   then
 # test if the application is a file or a folder
     if [ -f ${projects_path}/${project}/${application}.* ]
     then
       xfile=${projects_path}/${project}/${application}.*
-      hierarchy="${hrp} ${hra} ${hre}"
     else
       xfolder=${projects_path}/${project}/${application}
       xfile=${xfolder}/*
-      hierarchy="${hrp} ${hra} ${hre}"
     fi
-# if project and environment or only project declared
-  elif [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "e" ]] || [[ "${input[@]}" =~ "p" ]]
+# if project and any other argument is declared other thaj application
+  elif [[ "${input[@]}" =~ "p" ]]
   then
     xfile=${projects_path}/${project}.*
-    hierarchy="${hrp} ${hre}"
   fi
 
 # test if either the file or the folder of the application exists
@@ -124,12 +132,12 @@ set_file() {
 
 create_tmp() {
   tmp_file=$(mktemp /tmp/k8comp.XXXXXX)
-# set the start of the file 
+# set the start of the file
   for eachfile in ${xfile}
   do
     if [ "$(head -1 ${eachfile})" != "---" ]
     then
-      sed -i '1 i\---' ${eachfile}
+      echo '---' >> ${tmp_file}
       cat ${eachfile} >> ${tmp_file}
     else
       cat ${eachfile} >> ${tmp_file}
@@ -141,6 +149,7 @@ replace_var() {
   sed -i "s|%{project}|${project}|g" ${tmp_file}
   sed -i "s|%{application}|${application}|g" ${tmp_file}
   sed -i "s|%{environment}|${environment}|g" ${tmp_file}
+  sed -i "s|%{location}|${location}|g" ${tmp_file}
 }
 
 replace_xvar() {
@@ -153,7 +162,7 @@ replace_xvar() {
 replace_allvar() {
   for variable in $(grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
   do
-    hr=$(hiera -c ${custom_hiera} ${variable} ${hierarchy})
+    hr=$(hiera -c ${custom_hiera} ${variable} ${hrall[@]})
 
     if [ "${hr}" = "nil" ] || [ "${hr}" = "" ]
     then
@@ -166,15 +175,16 @@ replace_allvar() {
   done
 }
 
+
 print_file() {
   # set notification variable
   notification="####### NOTICE ####### Deployment from ${xfile}"
+  border="######################"
   # print file on stdout
   cat ${tmp_file}
   # echo notification
-  echo ""
+  echo ${border}
   echo ${notification}
-  echo ""
 }
 
 clean() {

@@ -6,9 +6,12 @@
 
 # examples. There are more hierachies which can be created based on the requirements.
 :hierarchy:
+        - apps/%{project}/%{application}/%{environment}-%{location}
         - apps/%{project}/%{application}/%{environment}
+        - apps/%{project}/%{application}-%{location}
         - apps/%{project}/%{application}
         - apps/%{project}
+
 
         - apps/%{project}-%{application}/%{environment}
         - apps/%{project}-%{application}

@@ -13,8 +13,8 @@ Separate the variables from the code.
 
 ## Overview
 
-This is a bash script which help with the management of the deployment files.
-The script will just query hiera for the variables detected, replace them and create a new deployment. The files can be in any of the kubernetes supported formats (json, yaml, yml).
+This is a bash script to help with the management of the deployment files.
+The script will just query hiera for the variables detected, replace them and create a new deployment output. The files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
 
@@ -59,6 +59,10 @@ k8comp -h
 ```
 Usage: $programname [-h | -p <project_name> -a <application> -e <environment> ]
 
+The order of the arguments on the cmd defines the hierarchy.
+
+   -p project -a app -l location IS NOT EQUAL TO -p project -l location -a app
+
 Supported formats: yaml, yml, json
 
 Mandatory variables -p <project_name>
@@ -84,6 +88,15 @@ Mandatory variables -p <project_name>
 
 -e | --environment <environment> :      The environment will be checked from hiera. If no values are
                                         found in hiera the variables will not be replaced.
+                                        NOT PART OF projects FILE STRUCTURE but can be added as
+                                        variable in the yaml|yml|json template.
+                                        Available only in hiera
+
+-l | --location <location> :            The location will be checked from hiera. If no values are
+                                        found in hiera the variables will not be replaced.
+                                        NOT PART OF projects FILE STRUCTURE but can be added as
+                                        variable in the yaml|yml|json template.
+                                        Available only in hiera
 
 -x | --xtra <variable> :                The variable specified on the cmd run will be used to update
                                         a value on the final deployment file.
