@@ -137,7 +137,7 @@ create_tmp() {
   do
     if [ "$(head -1 ${eachfile})" != "---" ]
     then
-      echo '---' >> ${tmp_file}
+      echo -e "\n---" >> ${tmp_file}
       cat ${eachfile} >> ${tmp_file}
     else
       cat ${eachfile} >> ${tmp_file}
