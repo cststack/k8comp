@@ -13,7 +13,7 @@ Separate the variables from the code.
 
 ## Overview
 
-This is a bash script to help with the management of the deployment files.
+This is a script to help with the management of the deployment files.
 The script will just query hiera for the variables detected, replace them and create a new deployment output. The files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
@@ -48,7 +48,7 @@ Configure hiera or use the example provided.
 
 ## Usage
 
-Create a custom hierarchy based on the 3 variable provided, project, application and environment. The example provided might be useful to start with but it might not fully cover all the scenarios.
+Create a custom hierarchy based on the 4 variable provided, project, application, environment and location. The example provided might be useful to start with but it might not fully cover all the scenarios.
 
 The configuration file k8comp.conf can be customized as required.
 
