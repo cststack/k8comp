@@ -113,7 +113,7 @@ set_file() {
       xfolder=${projects_path}/${project}/${application}
       xfile=${xfolder}/*
     fi
-# if project and any other argument is declared other thaj application
+# if project and any other argument is declared other than application
   elif [[ "${input[@]}" =~ "p" ]]
   then
     xfile=${projects_path}/${project}.*
@@ -164,13 +164,18 @@ replace_allvar() {
   do
     hr=$(hiera -c ${custom_hiera} ${variable} ${hrall[@]})
 
+# Check if should fail on variable not found
     if [ "${hr}" = "nil" ] || [ "${hr}" = "" ]
     then
-     error "${variable} not found in hiera"
-     clean
-     exit 1
+    nf_var+=$variable
+      if [ "$var_fail_safe" == "true" ]
+      then
+        error "${variable} not found in hiera"
+        clean
+        exit 1
+      fi
     else
-     sed -i "s|%{${variable}}|${hr}|g" ${tmp_file}
+      sed -i "s|%{${variable}}|${hr}|g" ${tmp_file}
     fi
   done
 }
@@ -185,6 +190,12 @@ print_file() {
   # echo notification
   echo ${border}
   echo ${notification}
+  if [ ! -z "${nf_var[@]}" ]
+  then
+    echo ""
+    echo "# The following variables couldn't be retrieved from hiera: ${nf_var[@]}"
+    echo ""
+  fi
 }
 
 clean() {
