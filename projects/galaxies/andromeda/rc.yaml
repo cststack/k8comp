@@ -5,7 +5,7 @@ metadata:
   labels:
     app: %{application}-%{environment}-rc
   name: %{application}-%{environment}-rc
-  namespace: %{project}-%{environment}
+  namespace: %{project}-%{environment}%{var1000}%{var1001}
 spec:
   replicas: 3
   selector:

@@ -8,6 +8,7 @@ Separate the variables from the code.
 2. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
 3. [Usage - Configuration options and additional functionality](#usage)
+    * [Main variables mapping](#main-variables-mapping)
     * [Yaml variables](#yaml-variables)
 4. [To do](#to-do)
 
@@ -24,11 +25,11 @@ To install the script just clone the repository in /opt/k8comp/
 
 Make the script executable
 ```
-chmod +x /opt/k8comp/k8comp
+chmod +x /opt/k8comp/bin/k8comp
 ```
-Create also a symlink
+And create also a symlink to /bin for example
 ```
-ln -s /opt/k8comp/k8comp /bin/k8comp
+ln -s /opt/k8comp/bin/k8comp /bin/k8comp
 ```
 ### Setup Requirements
 
@@ -106,32 +107,38 @@ Mandatory variables -p <project_name>
 
 Examples:
 
- k8comp -p project -a app -e development | kubectl apply -f -
- k8comp -p project -a app
+ k8comp -p project -a application -e development | kubectl apply -f -
+ k8comp -p project -a application
  k8comp -p project -e development
  k8comp -p project
- k8comp -p project -a app -e development -x var1=value1 -x var2=value2 | kubectl create -f -
- k8comp -p project -a app -x var1=value1 -x var2=value2 | kubectl apply -f -
+ k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
+ k8comp -p project -a aapplicationpp -x var1=value1 -x var2=value2 | kubectl apply -f -
 
  Dry run:
 
- k8comp -p project -a app -e development
- k8comp -p project -a app -e development -x var1=value1
+ k8comp -p project -a application -e development
+ k8comp -p project -a application -e development -x var1=value1
  ```
 
+### Main variables mapping
+
+To avoid reaching the maximum limit of a resource name length create any mappings in the "extras/mapping" folder.
+Any mapping will be used only on the deployment file. Hieradata and projects files need to match the cmd values.
+
 ### Yaml variables
+
 Replace the configs which are environment specific with
 ```
  %{variable_name}
 ```
 
-On the hieradata file hierarchy add
+On the hieradata hierarchy file add
 ```
 variable_name: value
 ```
 ## Limitations
 
-Tested only with CentOS 7 and kubernetes 1.2.0.
+Tested on CentOS 7 and kubernetes 1.2.0.
 
 ## To do
 

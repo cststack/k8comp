@@ -1,7 +1,11 @@
 #!/bin/bash
 
 source /opt/k8comp/k8comp.conf
-source /opt/k8comp/usage
+
+k8comp_home=$k8comp_dir/bin
+mapping=$k8comp_dir/extras/mapping
+
+source $k8comp_home/usage
 
 programname=$0
 red="$(tput setaf 1)"
@@ -9,6 +13,7 @@ green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 
 MAIN() {
+  kube_vars
   check_vars
   set_file
   create_tmp
@@ -56,8 +61,8 @@ while [ $# -gt 0 ]; do
     ;;
     -a|--application)
       if [ -n "$2" ]; then
-        application=$2
-        hra="application=$2"
+        application=${2}
+        hra="application=${2}"
         hrall+="${hra} "
         shift
       else
@@ -91,6 +96,52 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+# the below function will check the variables mapping and replace them in the deployment
+# if the variables cannot be found the cmd values will be used
+kube_vars(){
+  for i in ${hrall[@]}
+  do
+    find_var=$(grep -v '^#' $mapping/* | grep -wh ${i##*=})
+    if [[ "$i" =~ "project=" ]]
+    then
+      if [ -z $find_var ]
+      then
+        h_project=$project
+      else
+        pvar=$find_var
+        h_project=${pvar##*=}
+      fi
+    elif [[ "$i" =~ "application=" ]]
+    then
+      if [ -z $find_var ]
+      then
+        h_application=$application
+      else
+        avar=$find_var
+        h_application=${avar##*=}
+      fi
+    elif [[ "$i" =~ "environment=" ]]
+    then
+      if [ -z $find_var ]
+      then
+        h_environment=$environment
+      else
+        evar=$find_var
+        h_environment=${evar##*=}
+      fi
+    elif [[ "$i" =~ "location=" ]]
+    then
+      if [ -z $find_var ]
+      then
+        h_location=$location
+      else
+        lvar=$find_var
+        h_location=${lvar##*=}
+      fi
+    fi
+done
+}
 
 # check if the required values are declared
 check_vars() {
@@ -146,16 +197,18 @@ create_tmp() {
 }
 
 replace_var() {
-  sed -i "s|%{project}|${project}|g" ${tmp_file}
-  sed -i "s|%{application}|${application}|g" ${tmp_file}
-  sed -i "s|%{environment}|${environment}|g" ${tmp_file}
-  sed -i "s|%{location}|${location}|g" ${tmp_file}
+  sed -i "s|%{project}|${h_project}|g" ${tmp_file}
+  sed -i "s|%{application}|${h_application}|g" ${tmp_file}
+  sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
+  sed -i "s|%{location}|${h_location}|g" ${tmp_file}
 }
 
 replace_xvar() {
   for xvar in ${args[@]}
   do
-    sed -i "s|%{${xvar%%=*}}|${xvar##*=}|g" ${tmp_file}
+# avoind any conflicts when the variable include = character
+    xvar2=$(echo ${xvar} | cut -c $(($(echo ${xvar%%=*} | awk '{ print length }')+2))-)
+    sed -i "s|%{${xvar%%=*}}|${xvar2}|g" ${tmp_file}
   done
 }
 
@@ -167,12 +220,15 @@ replace_allvar() {
 # Check if should fail on variable not found
     if [ "${hr}" = "nil" ] || [ "${hr}" = "" ]
     then
-    nf_var+=$variable
+    nf_var+="$variable "
       if [ "$var_fail_safe" == "true" ]
       then
         error "${variable} not found in hiera"
         clean
         exit 1
+      else
+# avoid nil value being added on the deployment file
+        sed -i "s|%{${variable}}||g" ${tmp_file}
       fi
     else
       sed -i "s|%{${variable}}|${hr}|g" ${tmp_file}
@@ -180,15 +236,15 @@ replace_allvar() {
   done
 }
 
-
 print_file() {
   # set notification variable
-  notification="####### NOTICE ####### Deployment from ${xfile}"
+  notification="# NOTICE - Deployment from ${xfile}"
   border="######################"
   # print file on stdout
   cat ${tmp_file}
   # echo notification
   echo ${border}
+  echo ""
   echo ${notification}
   if [ ! -z "${nf_var[@]}" ]
   then

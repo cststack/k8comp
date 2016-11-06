@@ -1,0 +1,11 @@
+# kubernetes allows a limited number of characters for resource name
+# make sure the resource name is matching regex [a-z0-9]([-a-z0-9]*[a-z0-9])?)
+
+# projects
+galaxies=glxs
+
+# applications
+andromeda=andr
+
+# environments
+development=dev
