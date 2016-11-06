@@ -123,7 +123,7 @@ Examples:
 ### Main variables mapping
 
 To avoid reaching the maximum limit of a resource name length create any mappings in the "extras/mapping" folder.
-Any mapping will be used only on the deployment file. Hieradata and projects files need to match the cmd values.
+Any mapping will be used only on the deployment. Hieradata and projects files need to match the cmd values.
 
 ### Yaml variables
 
