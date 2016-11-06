@@ -112,7 +112,7 @@ Examples:
  k8comp -p project -e development
  k8comp -p project
  k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
- k8comp -p project -a aapplicationpp -x var1=value1 -x var2=value2 | kubectl apply -f -
+ k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
 
  Dry run:
 
