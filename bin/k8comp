@@ -102,8 +102,8 @@ done
 kube_vars(){
   for i in ${hrall[@]}
   do
-    find_var=$(grep -v '^#' $mapping/* | grep -wh ${i##*=})
-    if [[ "$i" =~ "project=" ]]
+    find_var=$(grep -v '^#' $mapping/* | grep -h "${i##*=}=")
+    if [[ "${i%%=*}" == "project" ]]
     then
       if [ -z $find_var ]
       then
@@ -112,7 +112,7 @@ kube_vars(){
         pvar=$find_var
         h_project=${pvar##*=}
       fi
-    elif [[ "$i" =~ "application=" ]]
+    elif [[ "${i%%=*}" == "application" ]]
     then
       if [ -z $find_var ]
       then
@@ -121,7 +121,7 @@ kube_vars(){
         avar=$find_var
         h_application=${avar##*=}
       fi
-    elif [[ "$i" =~ "environment=" ]]
+    elif [[ "${i%%=*}" == "environment" ]]
     then
       if [ -z $find_var ]
       then
@@ -130,7 +130,7 @@ kube_vars(){
         evar=$find_var
         h_environment=${evar##*=}
       fi
-    elif [[ "$i" =~ "location=" ]]
+    elif [[ "${i%%=*}" == "location=" ]]
     then
       if [ -z $find_var ]
       then

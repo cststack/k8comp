@@ -9,3 +9,5 @@ andromeda=andr
 
 # environments
 development=dev
+development-ro=devro
+development_rw=devrw
