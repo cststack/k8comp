@@ -1,9 +1,14 @@
 ---
 :backends:
+        - eyaml
         - yaml
 :yaml:
-                :datadir: /opt/k8comp/hieradata
-
+        :datadir: /opt/k8comp/hieradata
+:eyaml:
+        :datadir: /opt/k8comp/hieradata
+        :pkcs7_private_key: /opt/k8comp/keys/private_key.pkcs7.pem
+        :pkcs7_public_key:  /opt/k8comp/keys/public_key.pkcs7.pem
+        :extension: 'yaml'
 # examples. There are more hierachies which can be created based on the requirements.
 :hierarchy:
         - apps/%{project}/%{application}/%{environment}-%{location}

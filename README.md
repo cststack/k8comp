@@ -10,6 +10,7 @@ Separate the variables from the code.
 3. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Yaml variables](#yaml-variables)
+    * [eyaml variables (encrypted variables)](#eyaml-variables)
 4. [To do](#to-do)
 
 ## Overview
@@ -44,6 +45,7 @@ rpm -Uvh https://yum.puppetlabs.com/el/7/products/x86_64/puppetlabs-release-7-12
 and install the package
 ```
 yum install hiera -y
+gem install hiera-eyaml
 ```
 Configure hiera or use the example provided.
 
@@ -136,6 +138,17 @@ On the hieradata hierarchy file add
 ```
 variable_name: value
 ```
+
+### eyaml variables (encrypted variables)
+
+Encrypt any sensitive information using eyaml. The repository includes a working example. The variables are encrypted in hiera and are getting decrypted at the run time.
+
+NOTE: Make sure the keys are stored secure, not on the same repository as the yaml files.
+
+For more information on how to use eyaml check below URL:
+
+https://github.com/TomPoulton/hiera-eyaml
+
 ## Limitations
 
 Tested on CentOS 7 and kubernetes 1.2.0.
