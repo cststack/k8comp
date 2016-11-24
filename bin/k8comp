@@ -102,7 +102,7 @@ done
 kube_vars(){
   for i in ${hrall[@]}
   do
-    find_var=$(grep -v '^#' $mapping/* | grep -h "${i##*=}=")
+    find_var=$(grep -v '^#' $mapping/* | grep -h "^${i##*=}=")
     if [[ "${i%%=*}" == "project" ]]
     then
       if [ -z $find_var ]
