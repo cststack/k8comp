@@ -6,6 +6,7 @@ galaxies=glxs
 
 # applications
 andromeda=andr
+centaurus=cent
 
 # environments
 development=dev

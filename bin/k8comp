@@ -153,21 +153,62 @@ check_vars() {
 }
 
 set_file() {
+# if multiple environments are enabled set a variable with the new folder path
+  if [ "${k8comp_environments}" == "enabled" ]
+  then
+    envs="environments/${environment}"
+    err1="or projects/${envs}"
+  fi
+
+  if [ -z $environment ]
+  then
+    err2="and no environment specified"
+  fi
+
+  err0="No deployment files found on projects/$project ${err1} ${err2}"
+
 # if project, application and any other argument is declared
   if [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
   then
 # test if the application is a file or a folder
-    if [ -f ${projects_path}/${project}/${application}.* ]
+
+    if [ -f ${projects_path}/${envs}/${project}/${application}.* ]
+    then
+      xfile=${projects_path}/${envs}/${project}/${application}.*
+
+    elif [ -d ${projects_path}/${envs}/${project}/${application} ]
+    then
+      xfolder=${projects_path}/${envs}/${project}/${application}
+      xfile=${xfolder}/*
+
+    elif [ -f ${projects_path}/${project}/${application}.* ]
     then
       xfile=${projects_path}/${project}/${application}.*
-    else
+
+    elif [ -d ${projects_path}/${project}/${application} ]
+    then
       xfolder=${projects_path}/${project}/${application}
       xfile=${xfolder}/*
+
+    else
+      error $err0
+      exit 1
     fi
 # if project and any other argument is declared other than application
   elif [[ "${input[@]}" =~ "p" ]]
   then
-    xfile=${projects_path}/${project}.*
+    if [ -f ${projects_path}/${envs}/${project}.* ]
+    then
+      xfile=${projects_path}/${envs}/${project}.*
+
+    elif [ -f ${projects_path}/${project}.* ]
+    then
+      xfile=${projects_path}/${project}.*
+
+    else
+      error $err0
+      exit 1
+    fi
   fi
 
 # test if either the file or the folder of the application exists

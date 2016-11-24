@@ -1,0 +1,34 @@
+---
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  labels:
+    app: %{application}-%{environment}-rc
+  name: %{application}-%{environment}-rc
+  namespace: %{project}-%{environment}%{var1000}%{var1001}
+spec:
+  replicas: 3
+  selector:
+    app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: %{image_name}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        env:
+          - name: password_encrypted
+            value: %{encrypted_var}
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "256m"
+          limits:
+            memory: "256Mi"
+            cpu: "256m"
