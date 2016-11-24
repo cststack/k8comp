@@ -151,7 +151,7 @@ https://github.com/TomPoulton/hiera-eyaml
 
 ## Limitations
 
-Tested on CentOS 7 and kubernetes 1.2.0.
+Tested on CentOS 7 and kubernetes 1.2.0, 1.4.0 and 1.4.6
 
 ## To do
 
