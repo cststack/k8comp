@@ -254,7 +254,7 @@ replace_xvar() {
 }
 
 replace_allvar() {
-  for variable in $(grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
+  for variable in $(grep -v '^#' ${tmp_file} | grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' |sort |uniq |sed 's|[%{}]||g')
   do
     hr=$(hiera -c ${custom_hiera} ${variable} ${hrall[@]})
 
@@ -282,7 +282,7 @@ print_file() {
   notification="# NOTICE - Deployment from ${xfile}"
   border="######################"
   # print file on stdout
-  cat ${tmp_file}
+  cat ${tmp_file} | grep -v '^#'
   # echo notification
   echo ${border}
   echo ""
