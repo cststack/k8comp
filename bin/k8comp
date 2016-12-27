@@ -20,6 +20,7 @@ MAIN() {
   replace_var
   replace_xvar
   replace_allvar
+  external_files
   print_file
   clean
 }
@@ -227,11 +228,11 @@ create_tmp() {
 # set the start of the file
   for eachfile in ${xfile}
   do
-    if [ "$(head -1 ${eachfile})" != "---" ]
+    if [[ "$(head -1 ${eachfile})" =~ "---" ]]
     then
-      echo -e "\n---" >> ${tmp_file}
       cat ${eachfile} >> ${tmp_file}
     else
+      echo -e "\n---" >> ${tmp_file}
       cat ${eachfile} >> ${tmp_file}
     fi
   done
@@ -277,12 +278,29 @@ replace_allvar() {
   done
 }
 
+external_files() {
+  urls=$(grep '^http' ${tmp_file})
+
+  for u in ${urls}
+  do
+    sed -i "s|${u}||g" ${tmp_file}
+    ext=$(curl -qs ${u})
+    if [[ "${ext} | head -1" =~ "---" ]]
+    then
+      echo "${ext}" >> ${tmp_file}
+    else
+      echo -e "\n---" >> ${tmp_file}
+      echo "${ext}" >> ${tmp_file}
+    fi
+  done
+}
+
 print_file() {
   # set notification variable
   notification="# NOTICE - Deployment from ${xfile}"
   border="######################"
   # print file on stdout
-  cat ${tmp_file} | grep -v '^#'
+  cat ${tmp_file} | grep -v '^#' | sed '/^$/d'
   # echo notification
   echo ${border}
   echo ""

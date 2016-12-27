@@ -1,0 +1,9 @@
+---
+# deploy using k8comp -p kube-system -a kubetree
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: %{application}
+
+https://raw.githubusercontent.com/giantswarm/kubetree-backend/master/kubernetes/deployment.yml
+https://raw.githubusercontent.com/giantswarm/kubetree-backend/master/kubernetes/service.yml

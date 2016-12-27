@@ -1,0 +1,3 @@
+---
+# deploy using k8comp -p kube-system -a prometheus
+https://raw.githubusercontent.com/giantswarm/kubernetes-prometheus/master/manifests-all.yaml

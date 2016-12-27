@@ -9,14 +9,15 @@ Separate the variables from the code.
     * [Setup requirements](#setup-requirements)
 3. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
-    * [Yaml variables](#yaml-variables)
+    * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
+    * [External files](#external-files)
 4. [To do](#to-do)
 
 ## Overview
 
-This is a script to help with the management of the deployment files.
-The script will just query hiera for the variables detected, replace them and create a new deployment output. The files can be in any of the kubernetes supported formats (json, yaml, yml).
+This is a tool which can help with the management of the deployment files.
+The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
 
@@ -127,7 +128,7 @@ Examples:
 To avoid reaching the maximum limit of a resource name length create any mappings in the "extras/mapping" folder.
 Any mapping will be used only on the deployment. Hieradata and projects files need to match the cmd values.
 
-### Yaml variables
+### Variables
 
 Replace the configs which are environment specific with
 ```
@@ -143,15 +144,22 @@ variable_name: value
 
 Encrypt any sensitive information using eyaml. The repository includes a working example. The variables are encrypted in hiera and are getting decrypted at the run time.
 
-NOTE: Make sure the keys are stored secure, not on the same repository as the yaml files.
+NOTE: Make sure the keys are stored secure, not on the same repository as the deployment files.
 
 For more information on how to use eyaml check below URL:
 
 https://github.com/TomPoulton/hiera-eyaml
 
+### External files
+
+The tool will check the deployment files for any external resources to be deployed.
+Any line which starts with "http" it will be considered an external resource and it will be part of the deployment.
+
+The URLs can also contain variables.
+
 ## Limitations
 
-Tested on CentOS 7 and kubernetes 1.2.0, 1.4.0 and 1.4.6
+Tested on CentOS 7 and kubernetes 1.2.0, 1.4.0, 1.4.6 and 1.5.0
 
 ## To do
 

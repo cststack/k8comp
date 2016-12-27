@@ -1,3 +1,5 @@
+# deploy using k8comp -p kube-system -a fluentd-es
+
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:

@@ -1,4 +1,6 @@
 ---
+# deploy using k8comp -p galaxies -a andromeda -e development
+
 kind: ReplicationController
 apiVersion: v1
 metadata:
