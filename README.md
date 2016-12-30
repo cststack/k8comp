@@ -24,9 +24,9 @@ The output can be piped to kubectl or viewed on the console.
 
 ## Setup
 
-To install the script just clone the repository in /opt/k8comp/
+To install the tool just clone the repository in /opt/k8comp/
 
-Make the script executable
+Make the tool executable
 ```
 chmod +x /opt/k8comp/bin/k8comp
 ```
@@ -36,9 +36,9 @@ ln -s /opt/k8comp/bin/k8comp /bin/k8comp
 ```
 ### Setup Requirements
 
-The script requires a functional hiera configuration in the main k8comp folder.
+The tool requires a functional hiera configuration in the main k8comp folder.
 
-A fully working kubernetes installation and kubectl installed on the local host from where the script will be used.
+A fully working kubernetes installation and kubectl installed on the local host from where the tool will be used.
 
 To install hiera in CentOS 7 download and install puppet repository.
 ```
