@@ -52,7 +52,7 @@ while [ $# -gt 0 ]; do
     -p|--project)
       if [ -n "$2" ]; then
         project=$2
-        hrp="project=$2"
+        hrp="project=${2}"
         hrall+="${hrp} "
         shift
       else
@@ -63,7 +63,7 @@ while [ $# -gt 0 ]; do
     -a|--application)
       if [ -n "$2" ]; then
         application=${2}
-        hra="application=${2}"
+        hra="application=${2%%/*}"
         hrall+="${hra} "
         shift
       else
@@ -74,7 +74,7 @@ while [ $# -gt 0 ]; do
     -e|--environment)
       if [ -n "$2" ]; then
         environment=$2
-        hre="environment=$2"
+        hre="environment=${2}"
         hrall+="${hre} "
         shift
       fi
@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
     -l|--location)
       if [ -n "$2" ]; then
         location=$2
-        hrl="location=$2"
+        hrl="location=${2}"
         hrall+="${hrl} "
         shift
       fi

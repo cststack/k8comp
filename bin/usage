@@ -51,7 +51,7 @@ usage() {
  Examples:
 
   k8comp -p project -a application -e development | kubectl apply -f -
-  k8comp -p project -a application
+  k8comp -p project -a application/rc
   k8comp -p project -e development
   k8comp -p project
   k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -

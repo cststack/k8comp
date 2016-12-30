@@ -12,6 +12,7 @@ Separate the variables from the code.
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
     * [External files](#external-files)
+    * [Examples](#examples)
 4. [To do](#to-do)
 
 ## Overview
@@ -107,21 +108,7 @@ Mandatory variables -p <project_name>
                                         This will have priority over hiera value. Is not mandatory
                                         to be specified.
                                         The format is variable=value.
-
-Examples:
-
- k8comp -p project -a application -e development | kubectl apply -f -
- k8comp -p project -a application
- k8comp -p project -e development
- k8comp -p project
- k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
- k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
-
- Dry run:
-
- k8comp -p project -a application -e development
- k8comp -p project -a application -e development -x var1=value1
- ```
+```
 
 ### Main variables mapping
 
@@ -155,7 +142,42 @@ https://github.com/TomPoulton/hiera-eyaml
 The tool will check the deployment files for any external resources to be deployed.
 Any line which starts with "http" it will be considered an external resource and it will be part of the deployment.
 
-The URLs can also contain variables.
+The URLs can also contain variables. The variables will be pulled from hiera or replaced from the command line arguments.
+
+### Examples:
+
+Deploy from projects/project1/application1/ all the files or projects/project1/application1.* file using as hiera variables project1, application1 and development.
+```
+k8comp -p project1 -a application1 -e development | kubectl apply -f -
+```
+Deploy from projects/project1/application1/ only rc.* file using as hiera variables project1, application1 and development
+```
+k8comp -p project1 -a application1/rc -e development | kubectl apply -f -
+```
+Dry run from projects/project1/application1/ only service.* file using as hiera variables project1, application1 and development
+```
+k8comp -p project1 -a application1/service -e development
+```
+Dry run from projects/project1/application1/ all the files or projects/project1/application1.* file using as hiera variables project1 and application1
+```
+k8comp -p project1 -a application1
+```
+Dry run from projects/project1.* file using as hiera variables project1 and development
+```
+k8comp -p project1 -e development
+```
+Dry run from projects/project1.* file using as hiera variable project1
+```
+k8comp -p project1
+```
+Deploy from projects/project1/application1/ all the files or projects/project1/application1.* file using as hiera variables project1, application1 and development. Overwrite hiera variables var1 and var2.
+```
+k8comp -p project1 -a application1 -e development -x var1=value1 -x var2=value2 | kubectl create -f -
+```
+Deploy from projects/project1/application1/ all the files or projects/project1/application1.* file using as hiera variables project1 and application1. Overwrite hiera variables var1 and var2.
+```
+k8comp -p project1 -a application1 -x var1=value1 -x var2=value2 | kubectl apply -f -
+```
 
 ## Limitations
 
