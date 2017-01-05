@@ -117,7 +117,7 @@ kube_vars(){
     then
       if [ -z $find_var ]
       then
-        h_application=$application
+        h_application=${application%%/*}
       else
         avar=$find_var
         h_application=${avar##*=}
