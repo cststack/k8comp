@@ -5,22 +5,132 @@ Separate the variables from the code.
 #### Table of Contents
 
 1. [Overview](#overview)
-2. [Setup](#setup)
+2. [How it works](#how-it-works)
+3. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
-3. [Usage - Configuration options and additional functionality](#usage)
+4. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
     * [External files](#external-files)
     * [Examples](#examples)
-4. [To do](#to-do)
+      * [Test the examples](#test-the-examples)
 
 ## Overview
 
-This is a tool which can help with the management of the deployment files.
-The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The files can be in any of the kubernetes supported formats (json, yaml, yml).
+This is a tool which can help with the management of the deployment files. As different environments can have different requirements the tool simplifies the management of secrets (eyaml) and any value which is different from one environment to another (node ports, scaling requirements, environment variables and not only). A single file can be deployed to multiple environments.
+
+The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The project files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
+
+## How it works
+
+Examples repositories will be used for this explanation. Check [Test the examples](#test-the-examples) for the installation.
+
+K8comp will check the projects from /opt/k8comp/projects folder. Based on the command line arguments, k8comp will try to deploy that specific file or files.
+
+Below can be found the service yaml of the andromeda application.
+
+```
+cat projects/galaxies/andromeda/service.yaml
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: %{application}-%{environment}-svc
+  name: %{application}-%{environment}-svc
+  namespace: %{project}-%{environment}
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: %{nodeport}
+    protocol: TCP
+  selector:
+    app: nginx
+```
+
+Based on the hierarchy defined in hiera.yaml this example will pull the variable from development.yaml (all hierarchy will be queried). More on how to use hiera can be found using https://docs.puppet.com/hiera/3.2/puppet.html
+
+```
+cat hieradata/apps/galaxies/andromeda/development.yaml
+
+---
+nodeport: 31601
+```
+
+Running below command
+
+```
+k8comp -p galaxies -a andromeda/service -e development
+```
+will give us on the stdout
+
+```
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: andr-dev-svc
+  name: andr-dev-svc
+  namespace: glxs-dev
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 31601
+
+    protocol: TCP
+  selector:
+    app: nginx
+######################
+
+# NOTICE - Deployment from /opt/k8comp/projects/galaxies/andromeda/service.yaml
+```
+
+What k8comp has done:
+- has pulled the project/galaxies/andromeda/service.yaml file
+- checked for all the variables required by the service.yaml file. The variables format is %{variable}
+- checked for any mappings in extras/mapping (any file found in extras/mapping/ folder will be checked for mappings, for this example only "map" is available)
+- replaced any variables used in the command line (galaxies, andromeda, development) with their mappings
+```
+galaxies=glxs
+andromeda=andr
+development=dev
+```
+- any other variables were pulled from hiera, in this case the %{nodeport}
+- and print the result in the console
+
+The %{nodeport} variable can be overwritten from command line using:
+
+```
+k8comp -p galaxies -a andromeda/service -e development -x nodeport=32500
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: andr-dev-svc
+  name: andr-dev-svc
+  namespace: glxs-dev
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 32500
+
+    protocol: TCP
+  selector:
+    app: nginx
+######################
+
+# NOTICE - Deployment from /opt/k8comp/projects/galaxies/andromeda/service.yaml
+```
 
 ## Setup
 
@@ -179,10 +289,22 @@ Deploy from projects/project1/application1/ all the files or projects/project1/a
 k8comp -p project1 -a application1 -x var1=value1 -x var2=value2 | kubectl apply -f -
 ```
 
+#### Test the examples
+
+Start by cloning the repositories
+```
+git clone https://github.com/cststack/k8comp-hiera-examples.git /opt/k8comp/hieradata
+
+git clone https://github.com/cststack/k8comp-app-examples.git /opt/k8comp/projects
+```
+Once the repositories are set try any of the below commands
+```
+k8comp -p galaxies -a andromeda -e development
+k8comp -p galaxies -a andromeda/rc -e development
+k8comp -p galaxies -a andromeda/service -e development
+k8comp -p kube-system -a kubetree
+```
+
 ## Limitations
 
-Tested on CentOS 7 and kubernetes 1.2.0, 1.4.0, 1.4.6 and 1.5.0
-
-## To do
-
-* r10k integration example
+Tested on CentOS 7, Ubuntu 16.04 with kubernetes 1.2.0, 1.4.0, 1.4.6 and 1.5.0
