@@ -5,6 +5,7 @@ source /opt/k8comp/k8comp.conf
 k8comp_home=$k8comp_dir/bin
 mapping=$k8comp_dir/extras/mapping
 
+#source $k8comp_dir/extras/repo.conf
 source $k8comp_home/usage
 
 programname=$0
@@ -13,6 +14,7 @@ green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 
 MAIN() {
+  set_environments
   kube_vars
   check_vars
   set_file
@@ -87,6 +89,14 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
+    -b|--branch)
+      if [ -n "$2" ]; then
+        branch=$2
+        hrb="branch=${2}"
+        hrall+="${hrb} "
+        shift
+      fi
+    ;;
     -x|--xtra)
       read_x_args "${@:2}"
     ;;
@@ -97,6 +107,42 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+clone_git () {
+  if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
+  then
+    rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+    git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+  fi
+  cd $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+  git fetch --quiet --all
+  git pull --quiet --all
+  git reset --hard HEAD --quiet
+  if ! git checkout ${branch:-${main_deployment_branch}} --quiet
+  then
+    error "Branch ${branch:-${main_deployment_branch}} not found"
+    exit 1
+  fi
+}
+
+set_environments() {
+  if [[ "${k8comp_environments}" == "enabled" && "$continuous_git_pull" == "true" ]]
+  then
+    if [ "$hieradata_repo" == "" ]
+    then
+      clone_git $projects_repo
+    elif [ "$hieradata_repo" != "" ]
+    then
+      clone_git $projects_repo projects
+      clone_git $hieradata_repo hieradata
+    fi
+    if [ "$branch" == "" ]
+    then
+      hrb="branch=${branch:-${main_deployment_branch}}"
+      hrall+="${hrb} "
+    fi
+  fi
+}
 
 # the below function will check the variables mapping and replace them in the deployment
 # if the variables cannot be found the cmd values will be used
@@ -117,7 +163,7 @@ kube_vars(){
     then
       if [ -z $find_var ]
       then
-        h_application=${application%%/*}
+        h_application=$application
       else
         avar=$find_var
         h_application=${avar##*=}
@@ -157,7 +203,7 @@ set_file() {
 # if multiple environments are enabled set a variable with the new folder path
   if [ "${k8comp_environments}" == "enabled" ]
   then
-    envs="environments/${environment}"
+    envs="environments/${branch:-${main_deployment_branch}}/projects"
     err1="or projects/${envs}"
   fi
 
@@ -258,7 +304,6 @@ replace_allvar() {
   for variable in $(grep -v '^#' ${tmp_file} | grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' |sort |uniq |sed 's|[%{}]||g')
   do
     hr=$(hiera -c ${custom_hiera} ${variable} ${hrall[@]})
-
 # Check if should fail on variable not found
     if [ "${hr}" = "nil" ] || [ "${hr}" = "" ]
     then

@@ -20,6 +20,10 @@ Separate the variables from the code.
 
 This is a tool which can help with the management of the deployment files. As different environments can have different requirements the tool simplifies the management of secrets (eyaml) and any value which is different from one environment to another (node ports, scaling requirements, environment variables and not only). A single file can be deployed to multiple environments.
 
+The tool can automatically deploy from a specific branch, can be configured to automatically pull any new changes from the remote repository.
+
+The new feature allows the configuration of continuous git pull for projects and hieradata from a single or multiple repositories. The settings can be enabled on the main config file.
+
 The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The project files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
@@ -172,11 +176,7 @@ The usage can be found also by running
 k8comp -h
 ```
 ```
-Usage: $programname [-h | -p <project_name> -a <application> -e <environment> ]
-
-The order of the arguments on the cmd defines the hierarchy.
-
-   -p project -a app -l location IS NOT EQUAL TO -p project -l location -a app
+Usage: $programname [-h | -p <project_name> -a <application> -e <environment> -b <git_branch> ]
 
 Supported formats: yaml, yml, json
 
@@ -218,6 +218,8 @@ Mandatory variables -p <project_name>
                                         This will have priority over hiera value. Is not mandatory
                                         to be specified.
                                         The format is variable=value.
+-b | --branch <variable> :              Specify a branch from where to do the deployment.
+                                        It requires k8comp_environments to be enabled
 ```
 
 ### Main variables mapping
@@ -307,4 +309,4 @@ k8comp -p kube-system -a kubetree
 
 ## Limitations
 
-Tested on CentOS 7, Ubuntu 16.04 with kubernetes 1.2.0, 1.4.0, 1.4.6 and 1.5.0
+Tested on CentOS 7, Ubuntu 16.04 with kubernetes 1.2.0, 1.4.0, 1.4.6, 1.5.0, 1.5.7

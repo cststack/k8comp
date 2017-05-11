@@ -1,11 +1,7 @@
 #!/bin/bash
 usage() {
  message_green "
- Usage: $programname [-h | -p <project_name> -a <application> -e <environment> ]
-
- The order of the arguments on the cmd defines the hierarchy.
-
-    -p project -a app -l location IS NOT EQUAL TO -p project -l location -a app
+ Usage: $programname [-h | -p <project_name> -a <application> -e <environment> -b <git_branch>]
 
  Supported formats: yaml, yml, json
 
@@ -47,10 +43,12 @@ usage() {
                                          This will have priority over hiera value. Is not mandatory
                                          to be specified.
                                          The format is variable=value.
+ -b | --branch <variable> :              Specify a branch from where to do the deployment.
+                                         It requires k8comp_environments to be
 
  Examples:
 
-  k8comp -p project -a application -e development | kubectl apply -f -
+  k8comp -p project -a application -e development -b development | kubectl apply -f -
   k8comp -p project -a application/rc
   k8comp -p project -e development
   k8comp -p project
