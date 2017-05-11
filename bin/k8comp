@@ -126,7 +126,7 @@ clone_git () {
 }
 
 set_environments() {
-  if [[ "${k8comp_environments}" == "enabled" && "$continuous_git_pull" == "true" ]]
+  if [[ "${k8comp_environments}" == "enabled" && "$auto_git_pull" == "true" ]]
   then
     if [ "$hieradata_repo" == "" ]
     then

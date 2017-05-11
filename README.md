@@ -5,10 +5,11 @@ Separate the variables from the code.
 #### Table of Contents
 
 1. [Overview](#overview)
-2. [How it works](#how-it-works)
-3. [Setup](#setup)
+2. [Features](#features)
+3. [How it works](#how-it-works)
+4. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
-4. [Usage - Configuration options and additional functionality](#usage)
+5. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
@@ -22,11 +23,18 @@ This is a tool which can help with the management of the deployment files. As di
 
 The tool can automatically deploy from a specific branch, can be configured to automatically pull any new changes from the remote repository.
 
-The new feature allows the configuration of continuous git pull for projects and hieradata from a single or multiple repositories. The settings can be enabled on the main config file.
+Auto git pull for projects and hieradata from a single or multiple repositories. The settings can be enabled on the main config file.
 
 The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The project files can be in any of the kubernetes supported formats (json, yaml, yml).
 
 The output can be piped to kubectl or viewed on the console.
+
+## Features
+
+- support for yaml, json, yml
+- hiera with yaml and eyaml as backend
+- auto git pull on deployment
+- multi branch deployment
 
 ## How it works
 
