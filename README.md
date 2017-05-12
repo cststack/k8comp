@@ -32,9 +32,11 @@ The output can be piped to kubectl or viewed on the console.
 ## Features
 
 - support for yaml, json, yml
+- multiline variables (only for yaml files)
 - hiera with yaml and eyaml as backend
 - auto git pull on deployment
 - multi branch deployment
+- deployment from URL
 
 ## How it works
 
@@ -162,13 +164,12 @@ The tool requires a functional hiera configuration in the main k8comp folder.
 
 A fully working kubernetes installation and kubectl installed on the local host from where the tool will be used.
 
-To install hiera in CentOS 7 download and install puppet repository.
+Install the packages required.
+Requires
+ - hiera >= 3
+ - ed
 ```
-rpm -Uvh https://yum.puppetlabs.com/el/7/products/x86_64/puppetlabs-release-7-12.noarch.rpm
-```
-and install the package
-```
-yum install hiera -y
+gem install hiera
 gem install hiera-eyaml
 ```
 Configure hiera or use the example provided.

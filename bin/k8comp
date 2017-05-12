@@ -276,10 +276,10 @@ create_tmp() {
   do
     if [[ "$(head -1 ${eachfile})" =~ "---" ]]
     then
-      cat ${eachfile} >> ${tmp_file}
+      grep -v '^#' ${eachfile} >> ${tmp_file}
     else
       echo -e "\n---" >> ${tmp_file}
-      cat ${eachfile} >> ${tmp_file}
+      grep -v '^#' ${eachfile} >> ${tmp_file}
     fi
   done
 }
@@ -300,12 +300,21 @@ replace_xvar() {
   done
 }
 
+add_multiline_var () {
+ed ${1}  > /dev/null 2>&1 << END
+${2}i
+$(cat ${3})
+.
+wq
+END
+}
+
 replace_allvar() {
-  for variable in $(grep -v '^#' ${tmp_file} | grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' |sort |uniq |sed 's|[%{}]||g')
+  for variable in $(grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
   do
-    hr=$(hiera -c ${custom_hiera} ${variable} ${hrall[@]})
+    hr="${hiera_path}/hiera -c ${custom_hiera} ${variable} ${hrall[@]}"
 # Check if should fail on variable not found
-    if [ "${hr}" = "nil" ] || [ "${hr}" = "" ]
+    if [ "$($hr)" = "nil" ] || [ "$($hr)" = "" ]
     then
     nf_var+="$variable "
       if [ "$var_fail_safe" == "true" ]
@@ -317,8 +326,26 @@ replace_allvar() {
 # avoid nil value being added on the deployment file
         sed -i "s|%{${variable}}||g" ${tmp_file}
       fi
+
+# if variable has more lines
+    elif [[ "$($hr)" =~ "=>" ]]
+    then
+      variable_line_nr=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
+      leading_spaces=$(sed -n ${variable_line_nr}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
+      var_file=$(mktemp /tmp/k8comp.XXXXXX)
+      add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
+      $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
+      sed -i "${variable_line_nr}d" ${tmp_file}
+
+      add_multiline_var ${tmp_file} ${variable_line_nr} ${var_file}
+
+      if [ -f /tmp/k8comp.XXXXXX ]
+      then
+        rm -rf /tmp/k8comp.XXXXXX
+      fi
+
     else
-      sed -i "s|%{${variable}}|${hr}|g" ${tmp_file}
+      sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
     fi
   done
 }
@@ -345,7 +372,7 @@ print_file() {
   notification="# NOTICE - Deployment from ${xfile}"
   border="######################"
   # print file on stdout
-  cat ${tmp_file} | grep -v '^#' | sed '/^$/d'
+  cat ${tmp_file} | sed '/^$/d'
   # echo notification
   echo ${border}
   echo ""
