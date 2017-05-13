@@ -3,10 +3,14 @@
         - eyaml
         - yaml
 :yaml:
+# config for multibranch deployment
 #        :datadir: /opt/k8comp/projects/environments/%{branch}/hieradata
+# config for non multibranch deployment
         :datadir: /opt/k8comp/hieradata
 :eyaml:
+# config for multibranch deployment
 #        :datadir: /opt/k8comp/projects/environments/%{branch}/hieradata
+# config for non multibranch deployment
         :datadir: /opt/k8comp/hieradata
         :pkcs7_private_key: /opt/k8comp/keys/private_key.pkcs7.pem
         :pkcs7_public_key:  /opt/k8comp/keys/public_key.pkcs7.pem
