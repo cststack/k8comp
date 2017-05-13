@@ -136,11 +136,11 @@ set_environments() {
       clone_git $projects_repo projects
       clone_git $hieradata_repo hieradata
     fi
-    if [ "$branch" == "" ]
-    then
-      hrb="branch=${branch:-${main_deployment_branch}}"
-      hrall+="${hrb} "
-    fi
+  fi
+  if [[ "${k8comp_environments}" == "enabled" && "$branch" == "" ]]
+  then
+    hrb="branch=${branch:-${main_deployment_branch}}"
+    hrall+="${hrb} "
   fi
 }
 

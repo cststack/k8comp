@@ -25,7 +25,7 @@ The tool can automatically deploy from a specific branch, can be configured to a
 
 Auto git pull for projects and hieradata from a single or multiple repositories. The settings can be enabled on the main config file.
 
-The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output. The project files can be in any of the kubernetes supported formats (json, yaml, yml).
+The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output.
 
 The output can be piped to kubectl or viewed on the console.
 
@@ -164,9 +164,8 @@ The tool requires a functional hiera configuration in the main k8comp folder.
 
 A fully working kubernetes installation and kubectl installed on the local host from where the tool will be used.
 
-Install the packages required.
-Requires
- - hiera >= 3
+Requirements:
+ - hiera >= 3.x
  - ed
 ```
 gem install hiera
