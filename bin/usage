@@ -1,7 +1,7 @@
 #!/bin/bash
 usage() {
  message_green "
- Usage: $programname [-h | -p <project_name> -a <application> -e <environment> -b <git_branch>]
+ Usage: $programname [-h | pull | -p <project_name> -a <application> -e <environment> -b <git_branch>]
 
  Supported formats: yaml, yml, json
 
@@ -45,10 +45,17 @@ usage() {
                                          The format is variable=value.
  -b | --branch <variable> :              Specify a branch from where to do the deployment.
                                          It requires k8comp_environments to be
+ pull | --pull :                         If k8comp_environments is enabled and auto_git_pull is false
+                                         use >k8comp pull< without any arguments to pull main_deployment_branch or >k8comp pull -b your_branch< for
+                                         a specific git branch.
+                                         For pulling via ssh make sure the private key is available
+                                         on the server/container.
 
  Examples:
+  k8comp pull
+  k8comp pull -b test_branch
 
-  k8comp -p project -a application -e development -b development | kubectl apply -f -
+  k8comp -p project -a application -e development -b test_branch | kubectl apply -f -
   k8comp -p project -a application/rc
   k8comp -p project -e development
   k8comp -p project

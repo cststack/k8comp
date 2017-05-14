@@ -23,7 +23,7 @@ This is a tool which can help with the management of the deployment files. As di
 
 The tool can automatically deploy from a specific branch, can be configured to automatically pull any new changes from the remote repository.
 
-Auto git pull for projects and hieradata from a single or multiple repositories. The settings can be enabled on the main config file.
+Auto or manual git pull for projects and hieradata from a single or multiple repositories. If set to true it will pull on every deployment. Otherwise use ```k8comp pull``` for main_deployment_branch (set in k8comp.conf) or ```k8comp pull -b your_branch``` to pull a specific branch.
 
 The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output.
 
@@ -34,7 +34,7 @@ The output can be piped to kubectl or viewed on the console.
 - support for yaml, json, yml
 - multiline variables (only for yaml files)
 - hiera with yaml and eyaml as backend
-- auto git pull on deployment
+- auto git pull on deployment or manual git pull via ```k8comp pull```
 - multi branch deployment
 - deployment from URL
 
@@ -76,12 +76,7 @@ cat hieradata/apps/galaxies/andromeda/development.yaml
 nodeport: 31601
 ```
 
-Running below command
-
-```
-k8comp -p galaxies -a andromeda/service -e development
-```
-will give us on the stdout
+Executing ```k8comp -p galaxies -a andromeda/service -e development``` will print
 
 ```
 ---
@@ -179,12 +174,9 @@ Create a custom hierarchy based on the 4 variable provided, project, application
 
 The configuration file k8comp.conf can be customized as required.
 
-The usage can be found also by running
+The usage can be found also by running ```k8comp -h```
 ```
-k8comp -h
-```
-```
-Usage: $programname [-h | -p <project_name> -a <application> -e <environment> -b <git_branch> ]
+Usage: $programname [-h | pull | -p <project_name> -a <application> -e <environment> -b <git_branch>]
 
 Supported formats: yaml, yml, json
 
@@ -227,7 +219,28 @@ Mandatory variables -p <project_name>
                                         to be specified.
                                         The format is variable=value.
 -b | --branch <variable> :              Specify a branch from where to do the deployment.
-                                        It requires k8comp_environments to be enabled
+                                        It requires k8comp_environments to be
+pull | --pull :                         If k8comp_environments is enabled and auto_git_pull is false
+                                        use >k8comp pull< without any arguments to pull main_deployment_branch or >k8comp pull -b your_branch< for
+                                        a specific git branch.
+                                        For pulling via ssh make sure the private key is available
+                                        on the server/container.
+
+Examples:
+ k8comp pull
+ k8comp pull -b test_branch
+
+ k8comp -p project -a application -e development -b test_branch | kubectl apply -f -
+ k8comp -p project -a application/rc
+ k8comp -p project -e development
+ k8comp -p project
+ k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
+ k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
+
+ Dry run:
+
+ k8comp -p project -a application -e development
+ k8comp -p project -a application -e development -x var1=value1
 ```
 
 ### Main variables mapping

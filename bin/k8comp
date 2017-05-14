@@ -14,17 +14,22 @@ green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 
 MAIN() {
-  set_environments
-  kube_vars
-  check_vars
-  set_file
-  create_tmp
-  replace_var
-  replace_xvar
-  replace_allvar
-  external_files
-  print_file
-  clean
+  if [ "$pull" == "true" ]
+  then
+    git_pull_only
+  else
+    set_environments
+    kube_vars
+    check_vars
+    set_file
+    create_tmp
+    replace_var
+    replace_xvar
+    replace_allvar
+    external_files
+    print_file
+    clean
+  fi
 }
 
 error() {
@@ -32,11 +37,11 @@ error() {
 }
 
 message_green() {
-    echo -e "${green} $@ $(tput sgr0)"
+    echo -e "${green}$@ $(tput sgr0)"
 }
 
 message_yellow() {
-    echo -e "${yellow} $@ $(tput sgr0)"
+    echo -e "${yellow}$@ $(tput sgr0)"
 }
 
 read_x_args() {
@@ -57,9 +62,6 @@ while [ $# -gt 0 ]; do
         hrp="project=${2}"
         hrall+="${hrp} "
         shift
-      else
-        usage
-        exit 1
       fi
     ;;
     -a|--application)
@@ -68,9 +70,6 @@ while [ $# -gt 0 ]; do
         hra="application=${2%%/*}"
         hrall+="${hra} "
         shift
-      else
-        usage
-        exit 1
       fi
     ;;
     -e|--environment)
@@ -100,6 +99,9 @@ while [ $# -gt 0 ]; do
     -x|--xtra)
       read_x_args "${@:2}"
     ;;
+    pull|--pull)
+      pull=true
+    ;;
     -h|--help)
       usage
       exit 0
@@ -108,16 +110,31 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# function used only to pull specific branches as environments
+git_pull_only () {
+  if [ "$pull" == "true" ]
+  then
+    if set_environments
+    then
+      message_green "[ NOTICE ] - Successful pull ${branch:-${main_deployment_branch}} branch"
+    fi
+  fi
+}
+
 clone_git () {
   if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
   then
     rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
-    git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+    if ! git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+    then
+      error "Error cloning $1"
+      exit 1
+    fi
   fi
   cd $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+  git reset --hard HEAD --quiet
   git fetch --quiet --all
   git pull --quiet --all
-  git reset --hard HEAD --quiet
   if ! git checkout ${branch:-${main_deployment_branch}} --quiet
   then
     error "Branch ${branch:-${main_deployment_branch}} not found"
@@ -125,8 +142,9 @@ clone_git () {
   fi
 }
 
+# function used for environments based on branches
 set_environments() {
-  if [[ "${k8comp_environments}" == "enabled" && "$auto_git_pull" == "true" ]]
+  if [[ "${k8comp_environments}" == "enabled" && "$auto_git_pull" == "true" ]] || [[ "${k8comp_environments}" == "enabled" && "$pull" == "true" ]]
   then
     if [ "$hieradata_repo" == "" ]
     then
@@ -137,14 +155,14 @@ set_environments() {
       clone_git $hieradata_repo hieradata
     fi
   fi
-  if [[ "${k8comp_environments}" == "enabled" && "$branch" == "" ]]
+  if [[ "${k8comp_environments}" == "enabled" && "${branch}" == "" ]]
   then
     hrb="branch=${branch:-${main_deployment_branch}}"
     hrall+="${hrb} "
   fi
 }
 
-# the below function will check the variables mapping and replace them in the deployment
+# the function will check the variables mapping and replace them in the deployment
 # if the variables cannot be found the cmd values will be used
 kube_vars(){
   for i in ${hrall[@]}
@@ -227,16 +245,6 @@ set_file() {
     then
       xfolder=${projects_path}/${envs}/${project}/${application}
       xfile=${xfolder}/*
-
-    elif [ -f ${projects_path}/${project}/${application}.* ]
-    then
-      xfile=${projects_path}/${project}/${application}.*
-
-    elif [ -d ${projects_path}/${project}/${application} ]
-    then
-      xfolder=${projects_path}/${project}/${application}
-      xfile=${xfolder}/*
-
     else
       error $err0
       exit 1
@@ -247,11 +255,6 @@ set_file() {
     if [ -f ${projects_path}/${envs}/${project}.* ]
     then
       xfile=${projects_path}/${envs}/${project}.*
-
-    elif [ -f ${projects_path}/${project}.* ]
-    then
-      xfile=${projects_path}/${project}.*
-
     else
       error $err0
       exit 1
