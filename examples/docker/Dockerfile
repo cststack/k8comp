@@ -1,7 +1,7 @@
 FROM centos:7.3.1611
 
 ENV gotty_version=v0.0.13
-ENV k8comp_version=0.6.1-rc2
+ENV k8comp_version=0.6.0-rc2
 
 RUN yum clean all && \
     yum install ed git ruby -y && \
