@@ -43,8 +43,10 @@ usage() {
                                          This will have priority over hiera value. Is not mandatory
                                          to be specified.
                                          The format is variable=value.
+
  -b | --branch <variable> :              Specify a branch from where to do the deployment.
                                          It requires k8comp_environments to be
+
  pull | --pull :                         If k8comp_environments is enabled and auto_git_pull is false
                                          use >k8comp pull< without any arguments to pull main_deployment_branch or >k8comp pull -b your_branch< for
                                          a specific git branch.
