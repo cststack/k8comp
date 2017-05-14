@@ -1,7 +1,7 @@
-projects
-hieradata
-planning
-keys
-hiera.yaml
-k8comp.conf
-extras/mapping/*
+/projects
+/hieradata
+/planning
+/keys
+/hiera.yaml
+/k8comp.conf
+/extras/mapping/*
