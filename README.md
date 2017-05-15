@@ -193,7 +193,8 @@ Mandatory variables -p <project_name>
                                         If ${projects_path}/<project>/<application>.* file is present
                                         the deployment will be from that file.
                                         If there is no file in the above mentioned location the
-                                        deployment will be from ${projects_path}/<project>/<application>/ folder.
+                                        deployment will be from
+                                        ${projects_path}/<project>/<application>/ folder.
                                         There are no naming restrictions for the files from
                                         ${projects_path}/<project>/<application>/ folder.
                                         If no <application> is specified in the cmd the deployment
@@ -221,7 +222,8 @@ Mandatory variables -p <project_name>
                                         It requires k8comp_environments to be
 
 pull | --pull :                         If k8comp_environments is enabled and auto_git_pull is false
-                                        use >k8comp pull< without any arguments to pull main_deployment_branch or >k8comp pull -b your_branch< for
+                                        use >k8comp pull< without any arguments to pull
+                                        main_deployment_branch or >k8comp pull -b your_branch< for
                                         a specific git branch.
                                         For pulling via ssh make sure the private key is available
                                         on the server/container.

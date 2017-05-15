@@ -1,8 +1,6 @@
 # Single repo
 
-The example if for single repository which contains both projects and hieradata.
-
-The example repository which containes both folders ```projects``` and ```hieradata``` on the git root is
+The example is for a single repository which contains both folders ```projects``` and ```hieradata``` on the git root.
 ```
 https://github.com/cststack/k8comp-app-hiera-examples.git
 ```

@@ -1,6 +1,6 @@
 # Multi repo
 
-The example if for multiple repositories, one for projects and another one for hieradata. The k8comp.conf has auto_git_pull set to true which equals a git pull on each deployment.
+The example is for multiple repositories, one for projects and another one for hieradata. The k8comp.conf has auto_git_pull set to true which equals to a git pull for each deployment.
 
 Clone main k8comp repository
 

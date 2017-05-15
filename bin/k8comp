@@ -13,7 +13,7 @@ green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 
 MAIN() {
-  if [ "$pull" == "true" ]
+  if [ $pull ]
   then
     git_pull_only
   else
@@ -111,12 +111,14 @@ done
 
 # function used only to pull specific branches as environments
 git_pull_only () {
-  if [ "$pull" == "true" ]
+  if [ $pull ] && [ ${projects_repo} ]
   then
     if set_environments
     then
       message_green "[ NOTICE ] - Successful pull ${branch:-${main_deployment_branch}} branch"
     fi
+  else
+    error "Projects repo not declared"
   fi
 }
 
@@ -143,18 +145,18 @@ clone_git () {
 
 # function used for environments based on branches
 set_environments() {
-  if [ "${k8comp_environments}" == "enabled" ] && [ "$auto_git_pull" == "true" ] || [ "$pull" == "true" ]
+  if [ "${k8comp_environments}" == "enabled" ] && [ "$auto_git_pull" == "true" ] || [ $pull ]
   then
-    if [ "$hieradata_repo" == "" ]
+    if [ -z $hieradata_repo ]
     then
       clone_git $projects_repo
-    elif [ "$hieradata_repo" != "" ]
+    elif [ -n $hieradata_repo ]
     then
       clone_git $projects_repo projects
       clone_git $hieradata_repo hieradata
     fi
   fi
-  if [[ "${k8comp_environments}" == "enabled" && "${branch}" == "" ]]
+  if [[ "${k8comp_environments}" == "enabled" && -z ${branch} ]]
   then
     hrb="branch=${branch:-${main_deployment_branch}}"
     hrall+="${hrb} "
@@ -180,7 +182,7 @@ kube_vars(){
     then
       if [ -z $find_var ]
       then
-        h_application=$application
+        h_application=${application%%/*}
       else
         avar=$find_var
         h_application=${avar##*=}
@@ -316,7 +318,7 @@ replace_allvar() {
   do
     hr="${hiera_path}/hiera -c ${custom_hiera} ${variable} ${hrall[@]}"
 # Check if should fail on variable not found
-    if [ "$($hr)" = "nil" ] || [ "$($hr)" = "" ]
+    if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ]
     then
     nf_var+="$variable "
       if [ "$var_fail_safe" == "true" ]
