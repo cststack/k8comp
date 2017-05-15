@@ -19,6 +19,7 @@ RUN yum clean all && \
 
     rm -rf /opt/k8comp.tar.gz /gotty.tar.gz
 
+ADD configs/ssh/config /root/.ssh/config
 ENV TERM xterm
 
 CMD ["/gotty", "-w", "/bin/bash"]

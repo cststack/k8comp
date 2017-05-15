@@ -1,0 +1,5 @@
+Host *
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null
+   GSSAPIAuthentication no
+   LogLevel error
