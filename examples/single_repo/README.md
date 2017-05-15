@@ -9,7 +9,7 @@ https://github.com/cststack/k8comp-app-hiera-examples.git
 
 ## Set the configs
 
-Clone examples repository
+Clone main k8comp repository
 
 ```
 git clone https://github.com/cststack/k8comp.git
