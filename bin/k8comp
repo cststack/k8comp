@@ -22,9 +22,12 @@ MAIN() {
     check_vars
     set_file
     create_tmp
+# replace main variables on the main temporary file
     replace_var
     replace_xvar
     replace_allvar
+# replace the main variables if any are passed back on the main temp file from hiera
+    replace_var
     external_files
     print_file
     clean
@@ -169,6 +172,8 @@ kube_vars(){
   for i in ${hrall[@]}
   do
     find_var=$(grep -vs '^#' $mapping/* | grep -h "^${i##*=}=")
+# all variables form extras/mapping will be passed to hiera via mappings variable
+    mappings+=($find_var)
     if [[ "${i%%=*}" == "project" ]]
     then
       if [ -z $find_var ]
@@ -316,7 +321,7 @@ END
 replace_allvar() {
   for variable in $(grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
   do
-    hr="${hiera_path}/hiera -c ${custom_hiera} ${variable} ${hrall[@]}"
+    hr="${hiera_path}/hiera -c ${custom_hiera} ${variable} ${hrall[@]} ${mappings[@]}"
 # Check if should fail on variable not found
     if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ]
     then
@@ -347,7 +352,6 @@ replace_allvar() {
       then
         rm -rf /tmp/k8comp.XXXXXX
       fi
-
     else
       sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
     fi
