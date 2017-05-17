@@ -348,9 +348,9 @@ replace_allvar() {
 
       add_multiline_var ${tmp_file} ${variable_line_nr} ${var_file}
 
-      if [ -f /tmp/k8comp.XXXXXX ]
+      if [ -f $var_file ]
       then
-        rm -rf /tmp/k8comp.XXXXXX
+        rm -rf $var_file
       fi
     else
       sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
