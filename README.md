@@ -6,10 +6,9 @@ Separate the variables from the code.
 
 1. [Overview](#overview)
 2. [Features](#features)
-3. [How it works](#how-it-works)
-4. [Setup](#setup)
+3. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
-5. [Usage - Configuration options and additional functionality](#usage)
+4. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
@@ -17,11 +16,7 @@ Separate the variables from the code.
 
 ## Overview
 
-This is a tool which can help with the management of the deployment files. As different environments can have different requirements the tool simplifies the management of secrets (eyaml) and any value which is different from one environment to another (node ports, scaling requirements, environment variables and not only). A single file can be deployed to multiple environments.
-
-The tool can automatically deploy from a specific branch, can be configured to automatically pull any new changes from the remote repository.
-
-Auto or manual git pull for projects and hieradata from a single or multiple repositories. If set to true it will pull on every deployment. Otherwise use ```k8comp pull``` for main_deployment_branch (set in k8comp.conf) or ```k8comp pull -b your_branch``` to pull a specific branch.
+This is a tool which can help with the deployment files management. As different environments can have different requirements the tool simplifies the management of secrets (eyaml) and any value which is different from one environment to another (node ports, scaling requirements, environment variables and not only). A single file can be deployed to multiple environments.
 
 The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output.
 
@@ -30,116 +25,17 @@ The output can be piped to kubectl or viewed on the console.
 ## Features
 
 - support for yaml, json, yml
-- multiline variables (only for yaml files)
+- multiline variables [app](https://github.com/cststack/k8comp-app-hiera-examples/blob/master/projects/galaxies/andromeda/rc.yaml), [hiera](https://github.com/cststack/k8comp-app-hiera-examples/blob/master/hieradata/common.yaml) (only for yaml files)
 - hiera with yaml and eyaml as backend
 - auto git pull on deployment or manual git pull via ```k8comp pull```
 - multi branch deployment
 - deployment from URL
 
-## How it works
-
-Examples repositories will be used for this explanation. Check [Test the examples](#test-the-examples) for the installation.
-
-K8comp will check the projects from /opt/k8comp/projects folder. Based on the command line arguments, k8comp will try to deploy that specific file or files.
-
-Below can be found the service yaml of the andromeda application.
-
-```
-cat projects/galaxies/andromeda/service.yaml
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    app: %{application}-%{environment}-svc
-  name: %{application}-%{environment}-svc
-  namespace: %{project}-%{environment}
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: %{nodeport}
-    protocol: TCP
-  selector:
-    app: nginx
-```
-
-Based on the hierarchy defined in hiera.yaml this example will pull the variable from development.yaml (all hierarchy will be queried). More on how to use hiera can be found using https://docs.puppet.com/hiera/3.2/puppet.html
-
-```
-cat hieradata/apps/galaxies/andromeda/development.yaml
-
----
-nodeport: 31601
-```
-
-Executing ```k8comp -p galaxies -a andromeda/service -e development``` will print
-
-```
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    app: andr-dev-svc
-  name: andr-dev-svc
-  namespace: glxs-dev
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: 31601
-
-    protocol: TCP
-  selector:
-    app: nginx
-######################
-
-# NOTICE - Deployment from /opt/k8comp/projects/galaxies/andromeda/service.yaml
-```
-
-What k8comp has done:
-- has pulled the project/galaxies/andromeda/service.yaml file
-- checked for all the variables required by the service.yaml file. The variables format is %{variable}
-- checked for any mappings in extras/mapping (any file found in extras/mapping/ folder will be checked for mappings, for this example only "map" is available)
-- replaced any variables used in the command line (galaxies, andromeda, development) with their mappings
-```
-galaxies=glxs
-andromeda=andr
-development=dev
-```
-- any other variables were pulled from hiera, in this case the %{nodeport}
-- and print the result in the console
-
-The %{nodeport} variable can be overwritten from command line using:
-
-```
-k8comp -p galaxies -a andromeda/service -e development -x nodeport=32500
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    app: andr-dev-svc
-  name: andr-dev-svc
-  namespace: glxs-dev
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: 32500
-
-    protocol: TCP
-  selector:
-    app: nginx
-######################
-
-# NOTICE - Deployment from /opt/k8comp/projects/galaxies/andromeda/service.yaml
-```
-
 ## Setup
+
+Test with [docker](https://hub.docker.com/r/cststack/k8comp/) using the [examples](https://github.com/cststack/k8comp/tree/master/examples)
+- [single repository with manual git pull](https://github.com/cststack/k8comp/tree/master/examples/single_repo)
+- [multi repository with auto git pull](https://github.com/cststack/k8comp/tree/master/examples/multi_repo)
 
 To install the tool just clone the repository in /opt/k8comp/
 
