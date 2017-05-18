@@ -291,6 +291,7 @@ create_tmp() {
       grep -v '^#' ${eachfile} >> ${tmp_file}
     fi
   done
+  echo " " >> ${tmp_file}
 }
 
 replace_var() {
