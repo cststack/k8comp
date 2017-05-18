@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#set -x
 source /opt/k8comp/k8comp.conf
 
 k8comp_home=$k8comp_dir/bin
@@ -310,12 +310,12 @@ replace_xvar() {
 }
 
 add_multiline_var () {
-ed ${1}  > /dev/null 2>&1 << END
+ed ${1}  > /dev/null 2>&1 << __EOF__
 ${2}i
 $(cat ${3})
 .
 wq
-END
+__EOF__
 }
 
 replace_allvar() {
@@ -337,21 +337,35 @@ replace_allvar() {
       fi
 
 # if variable has more lines
-    elif [[ "$($hr)" =~ "=>" ]]
+    elif [[ "$($hr)" =~ '=>' ]]
     then
-      variable_line_nr=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
-      leading_spaces=$(sed -n ${variable_line_nr}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
-      var_file=$(mktemp /tmp/k8comp.XXXXXX)
-      add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
-      $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
-      sed -i "${variable_line_nr}d" ${tmp_file}
+# counting the number of the same variable
+      for each in $(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
+      do
+       variable_line_nr+="${each} "
+      done
+# for each variable in the files run a loop and replace the value
+      for i in ${variable_line_nr[@]}
+      do
+# getting the new line of the variable
+        var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
+        if [ ! -z ${var_line} ]
+        then
+          leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
+          var_file=$(mktemp /tmp/k8comp.XXXXXX)
+          add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
+          $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
+# delete line
+          sed -i "${var_line}d" ${tmp_file}
 
-      add_multiline_var ${tmp_file} ${variable_line_nr} ${var_file}
+          add_multiline_var ${tmp_file} ${var_line} ${var_file}
 
-      if [ -f $var_file ]
-      then
-        rm -rf $var_file
-      fi
+          if [ -f $var_file ]
+          then
+            rm -rf $var_file
+          fi
+        fi
+      done
     else
       sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
     fi
