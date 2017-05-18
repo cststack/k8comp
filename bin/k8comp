@@ -350,10 +350,10 @@ replace_allvar() {
       do
 # getting the new line of the variable
         var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
+        var_file=$(mktemp /tmp/k8comp.XXXXXX)
         if [ ! -z ${var_line} ]
         then
           leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
-          var_file=$(mktemp /tmp/k8comp.XXXXXX)
           add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
           $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
 # delete line
@@ -361,10 +361,10 @@ replace_allvar() {
 
           add_multiline_var ${tmp_file} ${var_line} ${var_file}
 
-          if [ -f $var_file ]
-          then
-            rm -rf $var_file
-          fi
+        fi
+        if [ -f $var_file ]
+        then
+          rm -rf $var_file
         fi
       done
     else
