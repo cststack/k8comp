@@ -364,7 +364,7 @@ replace_allvar() {
         fi
         if [ -f $var_file ]
         then
-          rm -rf $var_file
+          rm -f $var_file
         fi
       done
     else
@@ -411,7 +411,7 @@ print_file() {
 clean() {
   if [ -f ${tmp_file} ]
   then
-    rm -rf ${tmp_file}
+    rm -f ${tmp_file}
   fi
 }
 
