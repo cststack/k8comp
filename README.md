@@ -25,8 +25,9 @@ The output can be piped to kubectl or viewed on the console.
 ## Features
 
 - support for yaml, json, yml
+- encrypted variables ([eyaml](#eyaml-variables))
 - multiline variables [app](https://github.com/cststack/k8comp-app-hiera-examples/blob/master/projects/galaxies/andromeda/rc.yaml), [hiera](https://github.com/cststack/k8comp-app-hiera-examples/blob/master/hieradata/common.yaml) (only for yaml files)
-- hiera with yaml and eyaml as backend
+- hiera backend
 - auto git pull on deployment or manual git pull via ```k8comp pull```
 - multi branch deployment
 - deployment from URL
