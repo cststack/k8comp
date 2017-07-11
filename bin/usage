@@ -20,11 +20,15 @@ usage() {
                                          If ${projects_path}/<project>/<application>.* file is present
                                          the deployment will be from that file.
                                          If there is no file in the above mentioned location the
-                                         deployment will be from ${projects_path}/<project>/<application>/ folder.
+                                         deployment will be from
+                                         ${projects_path}/<project>/<application>/ folder.
                                          There are no naming restrictions for the files from
                                          ${projects_path}/<project>/<application>/ folder.
                                          If no <application> is specified in the cmd the deployment
                                          will be from ${projects_path}/<project>.* file.
+                                         An application folder or file can be located also
+                                         at the projects folder root. The hiera config requires
+                                         changes for this to work as expected.
 
  -e | --environment <environment> :      The environment will be checked from hiera. If no values are
                                          found in hiera the variables will not be replaced.
@@ -61,6 +65,10 @@ usage() {
   k8comp -p project -a application/rc
   k8comp -p project -e development
   k8comp -p project
+
+  k8comp -a application -e environment
+  k8comp -a application
+
   k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
   k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
 

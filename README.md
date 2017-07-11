@@ -6,9 +6,10 @@ Separate the variables from the code.
 
 1. [Overview](#overview)
 2. [Features](#features)
-3. [Setup](#setup)
+3. [Goals](#goals)
+4. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
-4. [Usage - Configuration options and additional functionality](#usage)
+5. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
@@ -18,7 +19,7 @@ Separate the variables from the code.
 
 This is a tool which can help with the deployment files management. As different environments can have different requirements the tool simplifies the management of secrets (eyaml) and any value which is different from one environment to another (node ports, scaling requirements, environment variables and not only). A single file can be deployed to multiple environments.
 
-The tool will read a file or multiple files from projects hierarchy, query hiera for the variables detected, replace them and create a new deployment output.
+The tool will read a file or multiple files from projects folder hierarchy, query hiera for the variables detected, replace them and create a new deployment output.
 
 The output can be piped to kubectl or viewed on the console.
 
@@ -96,6 +97,9 @@ Mandatory variables -p <project_name>
                                         ${projects_path}/<project>/<application>/ folder.
                                         If no <application> is specified in the cmd the deployment
                                         will be from ${projects_path}/<project>.* file.
+                                        An application folder or file can be located also
+                                        at the projects folder root. The hiera config requires
+                                        changes for this to work as expected.
 
 -e | --environment <environment> :      The environment will be checked from hiera. If no values are
                                         found in hiera the variables will not be replaced.
@@ -133,6 +137,10 @@ Examples:
  k8comp -p project -a application/rc
  k8comp -p project -e development
  k8comp -p project
+
+ k8comp -a application -e environment
+ k8comp -a application
+
  k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
  k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
 
