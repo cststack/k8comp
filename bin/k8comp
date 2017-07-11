@@ -19,7 +19,6 @@ MAIN() {
   else
     set_environments
     kube_vars
-    check_vars
     set_file
     create_tmp
 # replace main variables on the main temporary file
@@ -214,15 +213,6 @@ kube_vars(){
 done
 }
 
-# check if the required values are declared
-check_vars() {
-  if [ -z ${project} ]
-  then
-  	usage
-  	exit 1
-  fi
-}
-
 set_file() {
 # if multiple environments are enabled set a variable with the new folder path
   if [ "${k8comp_environments}" == "enabled" ]
@@ -255,6 +245,22 @@ set_file() {
       error $err0
       exit 1
     fi
+
+# if project is not declared
+elif [[ ! "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
+ then
+# test if the application is a file or a folder
+  if [ -f ${projects_path}/${envs}/${application}.* ]
+  then
+    xfile=${projects_path}/${envs}/${application}.*
+  elif [ -d ${projects_path}/${envs}/${application} ]
+  then
+    xfolder=${projects_path}/${envs}/${application}
+    xfile=${xfolder}/*
+  else
+    error $err0
+    exit 1
+  fi
 # if project and any other argument is declared other than application
   elif [[ "${input[@]}" =~ "p" ]]
   then
