@@ -154,7 +154,8 @@ set_environments() {
       clone_git $projects_repo
     elif [ -n $hieradata_repo ]
     then
-      clone_git $projects_repo projects
+# get the project clone folder from the k8comp.conf. Take only the last folder name of the variable
+      clone_git $projects_repo ${projects_path##*/}
       clone_git $hieradata_repo hieradata
     fi
   fi
@@ -217,8 +218,8 @@ set_file() {
 # if multiple environments are enabled set a variable with the new folder path
   if [ "${k8comp_environments}" == "enabled" ]
   then
-    envs="environments/${branch:-${main_deployment_branch}}/projects"
-    err1="or projects/${envs}"
+    envs="environments/${branch:-${main_deployment_branch}}/${projects_path##*/}"
+    err1="or ${projects_path##*/}/${envs}"
   fi
 
   if [ -z $environment ]
@@ -226,7 +227,7 @@ set_file() {
     err2="and no environment specified"
   fi
 
-  err0="No deployment files found on projects/$project ${err1} ${err2}"
+  err0="No deployment files found on ${projects_path##*/}/$project ${err1} ${err2}"
 
 # if project, application and any other argument is declared
   if [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
