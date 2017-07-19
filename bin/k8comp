@@ -241,7 +241,7 @@ set_file() {
     elif [ -d ${projects_path}/${envs}/${project}/${application} ]
     then
       xfolder=${projects_path}/${envs}/${project}/${application}
-      xfile=${xfolder}/*
+      xfile=${xfolder}/*.*
     else
       error $err0
       exit 1
@@ -257,7 +257,7 @@ elif [[ ! "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
   elif [ -d ${projects_path}/${envs}/${application} ]
   then
     xfolder=${projects_path}/${envs}/${application}
-    xfile=${xfolder}/*
+    xfile=${xfolder}/*.*
   else
     error $err0
     exit 1
