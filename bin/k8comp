@@ -273,16 +273,6 @@ elif [[ ! "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
       exit 1
     fi
   fi
-
-# test if either the file or the folder of the application exists
-  for file in ${xfile}
-  do
-    if [ ! -d ${xfolder} ] || [ ! -f ${file} ]
-    then
-      error "${project} ${application} not found in projects folder"
-      exit 1
-    fi
-  done
 }
 
 create_tmp() {
