@@ -6,10 +6,9 @@ Separate the variables from the code.
 
 1. [Overview](#overview)
 2. [Features](#features)
-3. [Goals](#goals)
-4. [Setup](#setup)
+3. [Setup](#setup)
     * [Setup requirements](#setup-requirements)
-5. [Usage - Configuration options and additional functionality](#usage)
+4. [Usage - Configuration options and additional functionality](#usage)
     * [Main variables mapping](#main-variables-mapping)
     * [Variables](#variables)
     * [eyaml variables (encrypted variables)](#eyaml-variables)
