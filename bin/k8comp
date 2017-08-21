@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set +x
 version=0.6.0
 source /opt/k8comp/k8comp.conf
 
@@ -136,7 +136,7 @@ while [ $# -gt 0 ]; do
   input+=("$1")
 # set variables from input
   case "$1" in
-    -p|--project)
+    -p|--project|project)
       if [ -n "$2" ]; then
         project=$2
         hrp="project=${2}"
@@ -144,7 +144,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
-    -a|--application)
+    -a|--application|application)
       if [ -n "$2" ]; then
         application=${2}
         hra="application=${2%%/*}"
@@ -152,7 +152,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
-    -e|--environment)
+    -e|--environment|environment)
       if [ -n "$2" ]; then
         environment=$2
         hre="environment=${2}"
@@ -160,7 +160,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
-    -l|--location)
+    -l|--location|location)
       if [ -n "$2" ]; then
         location=$2
         hrl="location=${2}"
@@ -168,7 +168,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
-    -b|--branch)
+    -b|--branch|branch)
       if [ -n "$2" ]; then
         branch=$2
         hrb="branch=${2}"
@@ -176,7 +176,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
     ;;
-    -x|--xtra)
+    -x|--xtra|xtra)
       read_x_args "${@:2}"
     ;;
     pull|--pull)
@@ -186,7 +186,7 @@ while [ $# -gt 0 ]; do
       usage
       exit 0
     ;;
-    -v|--version)
+    -v|--version|version)
       echo "$version"
       exit 0
     ;;
@@ -284,7 +284,7 @@ kube_vars(){
         evar=$find_var
         h_environment=${evar##*=}
       fi
-    elif [[ "${i%%=*}" == "location=" ]]
+    elif [[ "${i%%=*}" == "location" ]]
     then
       if [ -z $find_var ]
       then
@@ -313,7 +313,7 @@ set_file() {
   err0="No deployment files found on ${projects_path##*/}/$project ${err1} ${err2}"
 
 # if project, application and any other argument is declared
-  if [[ "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
+  if [[ ! -z "${project}" && ! -z "${application}" ]]
   then
 # test if the application is a file or a folder
 
@@ -331,7 +331,7 @@ set_file() {
     fi
 
 # if project is not declared
-elif [[ ! "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
+elif [[ -z "${project}" && "${application}" ]]
  then
 # test if the application is a file or a folder
   if [ -f ${projects_path}/${envs}/${application}.* ]
@@ -346,7 +346,7 @@ elif [[ ! "${input[@]}" =~ "p" && "${input[@]}" =~ "a" ]]
     exit 1
   fi
 # if project and any other argument is declared other than application
-  elif [[ "${input[@]}" =~ "p" ]]
+  elif [[ "${project}" ]]
   then
     if [ -f ${projects_path}/${envs}/${project}.* ]
     then
