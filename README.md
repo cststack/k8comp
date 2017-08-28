@@ -71,8 +71,6 @@ The configuration file k8comp.conf can be customized as required.
 
 The usage can be found also by running ```k8comp -h```
 ```
-Usage: $programname [-h | pull | -p <project_name> -a <application> -e <environment> -b <git_branch>]
-
 Supported formats: yaml, yml, json
 
 Mandatory variables -p <project_name>
@@ -105,6 +103,13 @@ Mandatory variables -p <project_name>
                                         NOT PART OF projects FILE STRUCTURE but can be added as
                                         variable in the yaml|yml|json template.
                                         Available only in hiera
+
+-t | --template <template> :            The templates folder can be configured on the k8comp.conf.
+                                        The base location is on the projects folder.
+                                        Can be used in conjunction with any of the main variables.
+                                        Any other variables from the template will be retrieved
+                                        from the hierarchy of the arguments (main variables).
+                                        The template name will not be used to query hiera.
 
 -l | --location <location> :            The location will be checked from hiera. If no values are
                                         found in hiera the variables will not be replaced.
@@ -139,6 +144,9 @@ Examples:
 
  k8comp -a application -e environment
  k8comp -a application
+
+ k8comp -t ingress -a application -e environment
+ k8comp -t redirects/ingress -a application -e environment
 
  k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
  k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -

@@ -69,6 +69,13 @@ usage() {
                                          variable in the yaml|yml|json template.
                                          Available only in hiera
 
+ -t | --template <template> :            The templates folder can be configured on the k8comp.conf.
+                                         The base location is on the projects folder.
+                                         Can be used in conjunction with any of the main variables.
+                                         Any other variables from the template will be retrieved
+                                         from the hierarchy of the arguments (main variables).
+                                         The template name will not be used to query hiera.
+
  -l | --location <location> :            The location will be checked from hiera. If no values are
                                          found in hiera the variables will not be replaced.
                                          NOT PART OF projects FILE STRUCTURE but can be added as
@@ -85,7 +92,8 @@ usage() {
                                          It requires k8comp_environments to be
 
  pull | --pull :                         If k8comp_environments is enabled and auto_git_pull is false
-                                         use >k8comp pull< without any arguments to pull main_deployment_branch or >k8comp pull -b your_branch< for
+                                         use >k8comp pull< without any arguments to pull
+                                         main_deployment_branch or >k8comp pull -b your_branch< for
                                          a specific git branch.
                                          For pulling via ssh make sure the private key is available
                                          on the server/container.
@@ -101,6 +109,9 @@ usage() {
 
   k8comp -a application -e environment
   k8comp -a application
+
+  k8comp -t ingress -a application -e environment
+  k8comp -t redirects/ingress -a application -e environment
 
   k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
   k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
@@ -136,6 +147,12 @@ while [ $# -gt 0 ]; do
   input+=("$1")
 # set variables from input
   case "$1" in
+    -t|--template|template)
+      if [ -n "$2" ]; then
+        template=$2
+        shift
+      fi
+    ;;
     -p|--project|project)
       if [ -n "$2" ]; then
         project=$2
@@ -313,7 +330,10 @@ set_file() {
   err0="No deployment files found on ${projects_path##*/}/$project ${err1} ${err2}"
 
 # if project, application and any other argument is declared
-  if [[ ! -z "${project}" && ! -z "${application}" ]]
+  if [[ ! -z ${template} ]]
+  then
+      xfile=${projects_path}/${envs}/${templates_path}/${template}.*
+  elif [[ ! -z "${project}" && ! -z "${application}" ]]
   then
 # test if the application is a file or a folder
 
