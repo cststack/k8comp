@@ -422,7 +422,13 @@ __EOF__
 replace_allvar() {
   for variable in $(grep -o '\%{[a-z,A-Z,0-9,_,-]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
   do
-    hr="${hiera_path}/hiera -c ${custom_hiera} ${variable} ${hrall[@]} ${mappings[@]}"
+# added hiera hash support
+    query="${custom_hiera} ${variable} ${hrall[@]} ${mappings[@]}"
+    hr="${hiera_path}/hiera -h -c ${query}"
+    if ! ${hr} > /dev/null 2>&1;
+    then
+        hr="${hiera_path}/hiera -c ${query}"
+    fi
 # Check if should fail on variable not found
     if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ]
     then
