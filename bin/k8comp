@@ -1,6 +1,6 @@
 #!/bin/bash
 set +x
-version=0.6.0
+version=0.6.1-rc1
 source /opt/k8comp/k8comp.conf
 
 k8comp_home=$k8comp_dir/bin
