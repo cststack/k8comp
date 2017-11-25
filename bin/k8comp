@@ -26,6 +26,8 @@ MAIN() {
     replace_allvar
 # replace the main variables if any are passed back on the main temp file from hiera
     replace_var
+# replace any other variables if any are passed back from hiera
+    replace_allvar
     external_files
     print_file
     clean
