@@ -1,7 +1,18 @@
 #!/bin/bash
 set +x
-version=0.6.1-rc1
-source /opt/k8comp/k8comp.conf
+version=0.6.1-rc2
+
+# Added option to load k8comp.conf dynamically
+if [ -f /opt/k8comp/k8comp.conf ]
+then
+    source /opt/k8comp/k8comp.conf
+elif [ -f `pwd`/k8comp.conf ]
+then
+    source `pwd`/k8comp.conf
+else
+    echo -e "$(tput setaf 1)[ ERROR ] - Cannot locate k8comp.conf $(tput sgr0)"
+    exit 1
+fi
 
 k8comp_home=$k8comp_dir/bin
 mapping=$k8comp_dir/extras/mapping
