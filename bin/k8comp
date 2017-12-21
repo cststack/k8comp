@@ -35,6 +35,8 @@ MAIN() {
     replace_var
     replace_xvar
     replace_allvar
+# replace any xvars which are passed back from hiera    
+    replace_xvar
 # replace the main variables if any are passed back on the main temp file from hiera
     replace_var
 # replace any other variables if any are passed back from hiera
