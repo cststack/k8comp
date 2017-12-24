@@ -197,4 +197,5 @@ Check examples folder.
 
 ## Limitations
 
-Tested on CentOS 7, Ubuntu 16.04 with kubernetes 1.2.0, 1.4.0, 1.4.6, 1.5.0, 1.5.7
+Tested on CentOS 7, Ubuntu 16.04.
+Works with any version of Kubernetes.
