@@ -68,7 +68,7 @@ k8comp requires a k8comp.conf file present on the /opt/k8comp/ or on the same fo
 | main_deployment_branch | master                      | any                      | works in conjunction with `k8comp_environment`          |
 | projects_repo          | empty                       | any                      | works in conjunction with `auto_git_pull`               |
 | hieradata_repo         | empty                       | any                      | works in conjunction with `auto_git_pull`               |
-| mapping                | `k8comp_dir`/extras/mapping | none                     | override deployment values. [example](https://github.com/cststack/k8comp/blob/master/examples/common/extras/mapping/map) |
+| mapping                | extras/mapping | none                     | override deployment values. [example](https://github.com/cststack/k8comp/blob/master/examples/common/extras/mapping/map) |
 
 Example [k8comp.conf](https://github.com/cststack/k8comp/blob/master/examples/defaults/k8comp.conf).
 
