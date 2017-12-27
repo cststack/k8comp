@@ -2,6 +2,18 @@
 set +x
 version=0.6.1-rc2
 
+k8comp_dir=`pwd` #Application main folder
+custom_hiera=`pwd`/hiera.yaml #Custom hiera config file
+hiera_path=/usr/local/bin #hiera binary location
+projects_path=`pwd`/projects #deployment files location
+templates_path=_templates #templates folder name. The folder is in `projects_path`
+var_fail_safe=false #set if the deployment should fail on variable not found
+k8comp_environments=disabled #each git branch equals an environment
+auto_git_pull=false #git pull before each deployment
+main_deployment_branc=master #works in conjunction with `k8comp_environment`
+projects_repo= #works in conjunction with `auto_git_pull`
+hieradata_repo= #works in conjunction with `auto_git_pull`
+
 # Added option to load k8comp.conf dynamically
 if [ -f /opt/k8comp/k8comp.conf ]
 then
@@ -10,8 +22,7 @@ elif [ -f `pwd`/k8comp.conf ]
 then
     source `pwd`/k8comp.conf
 else
-    echo -e "$(tput setaf 1)[ ERROR ] - Cannot locate k8comp.conf $(tput sgr0)"
-    exit 1
+    notification+="Cannot locate k8comp.conf, using default values. "
 fi
 
 k8comp_home=$k8comp_dir/bin
@@ -35,7 +46,7 @@ MAIN() {
     replace_var
     replace_xvar
     replace_allvar
-# replace any xvars which are passed back from hiera    
+# replace any xvars which are passed back from hiera
     replace_xvar
 # replace the main variables if any are passed back on the main temp file from hiera
     replace_var
@@ -513,14 +524,15 @@ external_files() {
 
 print_file() {
   # set notification variable
-  notification="# NOTICE - Deployment from ${xfile}"
+  notification+="Deployment from ${xfile}"
+
   border="######################"
   # print file on stdout
   cat ${tmp_file} | sed '/^$/d'
   # echo notification
   echo ${border}
   echo ""
-  echo ${notification}
+  echo "# [ NOTICE ] ${notification}"
   if [ ! -z "${nf_var[@]}" ]
   then
     echo ""
