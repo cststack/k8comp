@@ -65,7 +65,7 @@ k8comp requires a k8comp.conf file present on the /opt/k8comp/ or on the same fo
 | var_fail_safe          | false                       | true/false               | set if the deployment should fail on variable not found |
 | k8comp_environments    | disabled                    | disabled/enabled         | each git branch equals an environment                   |
 | auto_git_pull          | false                       | true/false               | git pull before each deployment                         |
-| main_deployment_branch | master                      | any                      | works in conjunction with `k8comp_environment`          |
+| main_deployment_branch | master                      | any                      | works in conjunction with `k8comp_environments`          |
 | projects_repo          | empty                       | any                      | works in conjunction with `auto_git_pull`               |
 | hieradata_repo         | empty                       | any                      | works in conjunction with `auto_git_pull`               |
 | mapping                | extras/mapping | none                     | override deployment values. [example](https://github.com/cststack/k8comp/blob/master/examples/common/extras/mapping/map) |
