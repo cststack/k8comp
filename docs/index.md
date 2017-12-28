@@ -20,7 +20,7 @@ The templates can be in any Kubernetes supported formats yaml,json,yml
 
 ## [](#variables)Variables
 The variable format is %{VARIALE_NAME}.
-There are 2 types of variables currently supported:
+There are few types of variables supported:
 - single value variables
 - multi line variables (only for yaml template). These are handy for all kind of headers and metadata values.  
     **Example:**  
@@ -40,7 +40,7 @@ There are 2 types of variables currently supported:
         apiVersion: v1
     ```
 - encrypted variables using [eyaml](https://github.com/voxpupuli/hiera-eyaml)
-- composed variables. A single variable can multiple values collected from hierarchy. [explanation](https://stackoverflow.com/questions/40615946/iterate-over-a-deeply-nested-hiera-hash-in-puppet-manifest)
+- composed variables. A single variable can have multiple values collected from hierarchy. [explanation](https://stackoverflow.com/questions/40615946/iterate-over-a-deeply-nested-hiera-hash-in-puppet-manifest)
 
 
 ## [](#auto_git_pull)Auto GIT pull
