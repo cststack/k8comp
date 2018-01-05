@@ -2,10 +2,13 @@
 set +x
 version=0.6.1-rc2
 
-k8comp_dir=`pwd` #Application main folder
-custom_hiera=`pwd`/hiera.yaml #Custom hiera config file
+if [ -z ${k8comp_dir} ]
+then
+    k8comp_dir=`pwd` #Application main folder
+fi
+custom_hiera=${k8comp_dir}/hiera.yaml #Custom hiera config file
 hiera_path=/usr/local/bin #hiera binary location
-projects_path=`pwd`/projects #deployment files location
+projects_path=${k8comp_dir}/projects #deployment files location
 templates_path=_templates #templates folder name. The folder is in `projects_path`
 var_fail_safe=false #set if the deployment should fail on variable not found
 k8comp_environments=disabled #each git branch equals an environment
@@ -18,9 +21,9 @@ hieradata_repo= #works in conjunction with `auto_git_pull`
 if [ -f /opt/k8comp/k8comp.conf ]
 then
     source /opt/k8comp/k8comp.conf
-elif [ -f `pwd`/k8comp.conf ]
+elif [ -f ${k8comp_dir}/k8comp.conf ]
 then
-    source `pwd`/k8comp.conf
+    source ${k8comp_dir}/k8comp.conf
 else
     notification+="Cannot locate k8comp.conf, using default values. "
 fi
