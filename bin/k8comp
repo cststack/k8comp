@@ -10,7 +10,7 @@ templates_path=_templates #templates folder name. The folder is in `projects_pat
 var_fail_safe=false #set if the deployment should fail on variable not found
 k8comp_environments=disabled #each git branch equals an environment
 auto_git_pull=false #git pull before each deployment
-main_deployment_branc=master #works in conjunction with `k8comp_environment`
+main_deployment_branch=master #works in conjunction with `k8comp_environment`
 projects_repo= #works in conjunction with `auto_git_pull`
 hieradata_repo= #works in conjunction with `auto_git_pull`
 
@@ -27,6 +27,9 @@ fi
 
 k8comp_home=$k8comp_dir/bin
 mapping=$k8comp_dir/extras/mapping
+# added dynamic location for hiera.yaml
+hrall+="k8comp_dir=${k8comp_dir} "
+
 
 programname=$0
 red="$(tput setaf 1)"
