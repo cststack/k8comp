@@ -33,6 +33,16 @@ mapping=$k8comp_dir/extras/mapping
 # added dynamic location for hiera.yaml
 hrall+="k8comp_dir=${k8comp_dir} "
 
+# system detect
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Darwin*)
+        seq=gseq
+    ;;
+    *)
+        seq=seq
+    ;;
+esac
 
 programname=$0
 red="$(tput setaf 1)"
@@ -492,7 +502,7 @@ replace_allvar() {
         if [ ! -z ${var_line} ]
         then
           leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
-          add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
+          add_leading_spaces=$(${seq} -s' ' ${leading_spaces}|tr -d '[:digit:]')
           $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
 # delete line
           sed -i "${var_line}d" ${tmp_file}

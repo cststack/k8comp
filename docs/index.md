@@ -93,7 +93,7 @@ chmod +x /usr/local/bin/k8comp
 K8comp requires a k8comp.conf file present on the /opt/k8comp/ or on the same folder from where the command is executed (pwd).
 
 ## [](#config)k8comp.conf
-
+{:.table}
 | variable               | default value               | supported values         | description                                             |
 |:-----------------------|:----------------------------|:-------------------------|:--------------------------------------------------------|
 | k8comp_dir             | $PWD                        | any                      | Application main folder                                 |
