@@ -24,6 +24,8 @@ font-awesome:
 sass:
   style: compressed
 
+repository_url: "https://github.com/cststack/k8comp"
+
 # -----
 # Build
 
