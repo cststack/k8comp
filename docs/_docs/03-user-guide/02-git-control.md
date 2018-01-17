@@ -3,15 +3,15 @@ title: Git control
 category: User guide
 order: 2
 ---
-TBU
+Most of the k8comp configs can be stored in git repositories.
 
-## [](#auto_git_pull)Auto GIT pull
+**Advanced setup**
+- git repo for projects with/without hieradata
+- git ssh access to the projects/hieradata repositories for the deployment user
+- k8comp configs repository (hiera.yaml, k8comp.conf and extra folder)
+- remote location where to store eyaml keys
 
-Auto git pull means that k8comp will update the current templates before each deployment. This option can be set to false for manual pull using `k8comp pull`.  
-For this option to work the environment from where k8comp will be run needs to have ssh access to the projects/hieradata repositories.  
-k8comp.conf needs to have
-- k8comp_environments=enabled
-- auto_git_pull=true
-- a projects_repo and a hieradata_repo (depending on the case)  
-
-A config example can be found  [here](#hierayaml)
+**Simple setup**
+- single repository for projects and hieradata
+- single repository for k8comp configs including eyaml keys
+- git ssh access to all of above repositories
