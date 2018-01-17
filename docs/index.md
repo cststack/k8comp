@@ -5,8 +5,11 @@ title: About
 K8comp is a tool which substitutes any templates variables declared in the format %{variable} with values from a files hierarchy using [hiera](https://rubygems.org/gems/hiera/versions/3.2.0).
 The tool was created to simplify apps deployments for Kubernetes but it can be used to template any other type of files.  
 
-K8comp doesn't interact with Kubernetes API in any way which means is not tight to any Kubernetes version, it just prints to stdout the templates. Because of this the user needs to make sure the deployment files are compatible with the Kubernetes version where the files will be deployed.  
-The tool requires kubectl installed and configured locally.
+K8comp doesn't interact with Kubernetes API in any way which means is not tight to any Kubernetes version, it just prints to stdout the deployment files. Because of this the user needs to make sure the deployment files are compatible with the Kubernetes version where the files will be deployed.  
+> The tool requires kubectl installed and configured locally.
+
+How k8comp works?
+![how-it-works]({{ site.baseurl }}/assets/docs-images/template-processing.png)
 
 ## [](#goals)Goals
 
@@ -15,9 +18,18 @@ The tool requires kubectl installed and configured locally.
 - use the default yaml/json Kubernetes syntax
 - store any secrets encrypted in a GIT repository
 
-## [](#quickinstall)Quick Install
+## [](#features)Features
 
-The easiest way to test k8comp is with [docker CI container](https://hub.docker.com/r/cststack/k8comp-ci-ssh/)
+- support for yaml, json, yml
+- encrypted variables using eyaml
+- multiline variables (only for yaml files)
+- auto git pull on deployment or manual git pull via ```k8comp pull```
+- multi branch deployment
+- support for remote templates
+
+## [](#quick-start)Quick start
+
+The easiest way to start using k8comp is with [docker CI container](https://hub.docker.com/r/cststack/k8comp-ci-ssh/)
 
 1) Create a local folder to store the projects
 ```

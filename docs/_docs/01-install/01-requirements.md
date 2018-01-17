@@ -1,11 +1,11 @@
 ---
 title: Requirements
-category:
-order: 2
+category: Install
+order: 1
 ---
 
 K8comp was only tested in Linux. Below can be found the details of a working setup.
-kubectl should be installed and configured locally.
+> To deploy the templates kubectl should be installed and configured locally.
 
 ## [](#os)OS
 
