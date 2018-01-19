@@ -41,8 +41,3 @@ The below command will deploy a component called "healthcheck" for an "andromeda
 ```
 k8comp -t healthcheck -a andromeda -e development
 ```
-
-Another example is a fluentd service deployed to a client dedicated infrastructure. All the details of the templates will be retrieved from the hieradata of that specific client, in our case "client100".
-```
-k8comp -t fluentd -c client100
-```

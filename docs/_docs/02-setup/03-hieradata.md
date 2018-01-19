@@ -13,12 +13,17 @@ The variables use to query hiera are:
 - application (-a)
 - environment (-e)
 - location (-l)
-- client (-c)
 - any mappings created using the `extra/mappings/*` folder will be passed to hiera
 
 ## [](#variables)Variables
 
-The variable format is %{VARIALE_NAME}.  
+The variable format is %{VARIABLE default "DEFAULT_VALUE"} or %{VARIABLE}.  
+The variable retrieval order is:
+- hiera
+- default value specified as part of variable template  
+
+> The value before "default" (in the above example "VARIABLE") will be retrieved from hiera. If no value is available in hiera the value after "default" (in the above example "DEFAULT_VALUE") will be used as default.
+
 There are few types of variables supported:
 - single value variables
 - multi line variables (only for yaml template). These are handy for all kind of headers, metadata values or any other data difference between deployments which has more than a single value.  

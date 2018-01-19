@@ -4,7 +4,7 @@ For more information about k8comp check https://cststack.github.io/k8comp/
 
 ## About
 
-K8comp is a tool which substitutes any templates variables declared in the format %{variable} with values from a files hierarchy using [hiera](https://rubygems.org/gems/hiera/versions/3.2.0).
+K8comp is a tool which substitutes any templates variables declared in the format %{VARIABLE default "DEFAULT_VALUE"} or %{VARIABLE} with values from a files hierarchy using [hiera](https://rubygems.org/gems/hiera/versions/3.2.0).
 The tool was created to simplify apps deployments for Kubernetes but it can be used to template any other type of files.  
 
 ## Features
