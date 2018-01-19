@@ -456,7 +456,7 @@ replace_allvar() {
   OLDIFS=$IFS
   IFS=$(echo -en "\n\b")
 # find all the variables in the format %{}
-  for variable in $(grep -o '\%{[,a-zA-Z0-9_-\/^$.|?*+(){}"''" ]*\}' ${tmp_file} |sort |uniq |sed 's|[%{}]||g')
+  for variable in $(grep -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
   do
 # restore the old IFS
     IFS=$OLDIFS
