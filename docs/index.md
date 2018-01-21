@@ -5,8 +5,11 @@ title: About
 K8comp is a tool which substitutes any templates variables declared in the format %{VARIABLE default "DEFAULT_VALUE"} or %{VARIABLE} with values from a files hierarchy using [hiera](https://rubygems.org/gems/hiera/versions/3.2.0).
 The tool was created to simplify apps deployments for Kubernetes but it can be used to template any other type of files.  
 
-K8comp doesn't interact with Kubernetes API in any way which means is not tight to any Kubernetes version, it just prints to stdout the deployment files. Because of this the user needs to make sure the deployment files are compatible with the Kubernetes version where the files will be deployed.  
-> The tool requires kubectl installed and configured locally.
+K8comp doesn't interact with Kubernetes API in any way which means is not tight to any Kubernetes version, it just prints to stdout the deployment files. Because of this the user needs to make sure the deployment files are compatible with the Kubernetes version where the files will be deployed.
+
+To install k8comp as helm plugin use `helm plugin install https://github.com/cststack/k8comp`
+
+> To deploy/delete apps using k8comp just pipe everything to kubectl. K8comp requires kubectl to be installed and configured locally.
 
 How k8comp works?
 ![how-it-works]({{ site.baseurl }}/assets/docs-images/template-processing.png)
@@ -26,6 +29,7 @@ How k8comp works?
 - auto git pull on deployment or manual git pull via ```k8comp pull```
 - multi branch deployment
 - support for remote templates
+- use as helm plugin `helm plugin install https://github.com/cststack/k8comp`
 
 ## [](#quick-start)Quick start
 

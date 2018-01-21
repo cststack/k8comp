@@ -22,5 +22,6 @@ The tool was created to simplify apps deployments for Kubernetes but it can be u
 - auto git pull on deployment or manual git pull via ```k8comp pull```
 - multi branch deployment
 - support for remote templates
+- use as helm plugin `helm plugin install https://github.com/cststack/k8comp`
 
 ![how-it-works](docs/assets/docs-images/template-processing.png)
