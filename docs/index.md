@@ -13,9 +13,9 @@ How k8comp works?
 
 ## [](#goals)Goals
 
+- use the default yaml/json Kubernetes syntax
 - to have a templates library which can be used in multiple environments and be version controlled using GIT
 - have full control of all deployable resources without a complicated deployment setup
-- use the default yaml/json Kubernetes syntax
 - store any secrets encrypted in a GIT repository
 
 ## [](#features)Features
