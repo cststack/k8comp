@@ -1,0 +1,6 @@
+name: "k8comp"
+version: "0.6.2-rc2"
+usage: "k8comp plugin for helm"
+description: |-
+  This plugin creates helm apps from hiera using k8comp. More info on https://cststack.github.io/k8comp/.
+command: "$HELM_PLUGIN_DIR/bin/k8comp helm"

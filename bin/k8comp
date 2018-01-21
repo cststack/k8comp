@@ -160,7 +160,7 @@ error() {
 }
 
 message_green() {
-    echo -e "${green}$@ $(tput sgr0)"
+    echo -e "${green}[ INFO ] - $@ $(tput sgr0)"
 }
 
 message_yellow() {
@@ -231,6 +231,15 @@ while [ $# -gt 0 ]; do
     pull|--pull)
       pull=true
     ;;
+    helm|--helm)
+      helm_package=true
+    ;;
+    helm-package-version|--helm-package-version)
+        if [ -n "$2" ]; then
+          helm_package_version=$2
+          shift
+        fi
+    ;;
     -h|--help)
       usage
       exit 0
@@ -249,7 +258,7 @@ git_pull_only () {
   then
     if set_environments
     then
-      message_green "[ NOTICE ] - Successful pull ${branch:-${main_deployment_branch}} branch"
+      message_green "[ INFO ] - Successful pull ${branch:-${main_deployment_branch}} branch"
     fi
   else
     error "Projects repo not declared"
@@ -536,6 +545,34 @@ external_files() {
   done
 }
 
+helm_output() {
+    helm_package_name=$(echo ${template} ${project} ${application} ${location} ${environment} | tr " " "-")
+    if [ -z ${helm_package_version} ]
+    then
+        helmpv=$(date +%Y.%m%d.%H%M%S)
+    else
+        helmpv=${helm_package_version}
+    fi
+
+    mkdir -p ./${helm_package_name}/templates
+    cat $1 > ./$helm_package_name/templates/k8comp-output.yaml
+    echo "apiVersion: v1
+description: ${template} ${project} ${application} ${environment} ${location}
+name: ${helm_package_name}
+version: ${helmpv}" > ./${helm_package_name}/Chart.yaml
+    if helm lint ${helm_package_name}
+    then
+        helm package ${helm_package_name}
+        message_green "helm chart: ${helm_package_name}-${helmpv}"
+    else
+        error "there are some errors with your current deployment"
+    fi
+    if [ -d ./${helm_package_name} ]
+    then
+        rm -rf ./${helm_package_name}
+    fi
+}
+
 print_file() {
   # set notification variable
   notification+="Deployment from ${xfile}"
@@ -546,12 +583,16 @@ print_file() {
   # echo notification
   echo ${border}
   echo ""
-  echo "# [ NOTICE ] ${notification}"
+  echo "# [ INFO ] ${notification}"
   if [ ! -z "${nf_var[@]}" ]
   then
     echo ""
     echo "# The following variables couldn't be retrieved from hiera: ${nf_var[@]}"
     echo ""
+  fi
+  if [[ "${helm_package}" == "true" ]]
+  then
+      helm_output "${tmp_file}"
   fi
 }
 
