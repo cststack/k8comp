@@ -206,3 +206,12 @@ If "auto_git_pull" is set to "true" on every deployment k8comp will pull the spe
 ```
 k8comp -a andromeda -e development -b development
 ```
+
+## [](#helm)helm
+
+Helm argument is used to create a helm chart in the current directory. K8comp needs to be properly configured in order to have this working.   
+The flag is automatically selected as part of the k8comp helm plugin.
+
+## [](#helm-package-version)helm-package-version
+
+The argument can be only used in conjunction with `helm` argument. It used to specify a helm chart version of a specific application.
