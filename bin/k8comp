@@ -156,11 +156,11 @@ usage() {
 }
 
 error() {
-    echo -e "${red}[ ERROR ] - $@ $(tput sgr0)"
+    echo -e "${red}[ERROR] $@ $(tput sgr0)"
 }
 
 message_green() {
-    echo -e "${green}[ INFO ] - $@ $(tput sgr0)"
+    echo -e "${green}[INFO] $@ $(tput sgr0)"
 }
 
 message_yellow() {
@@ -258,7 +258,7 @@ git_pull_only () {
   then
     if set_environments
     then
-      message_green "[ INFO ] - Successful pull ${branch:-${main_deployment_branch}} branch"
+      message_green "Successful pull ${branch:-${main_deployment_branch}} branch"
     fi
   else
     error "Projects repo not declared"
@@ -583,7 +583,7 @@ print_file() {
   # echo notification
   echo ${border}
   echo ""
-  echo "# [ INFO ] ${notification}"
+  echo "# [INFO] ${notification}"
   if [ ! -z "${nf_var[@]}" ]
   then
     echo ""
