@@ -18,12 +18,12 @@ projects_repo= #works in conjunction with `auto_git_pull`
 hieradata_repo= #works in conjunction with `auto_git_pull`
 
 # Added option to load k8comp.conf dynamically
-if [ -f /opt/k8comp/k8comp.conf ]
-then
-    source /opt/k8comp/k8comp.conf
-elif [ -f ${k8comp_dir}/k8comp.conf ]
+if [ -f ${k8comp_dir}/k8comp.conf ]
 then
     source ${k8comp_dir}/k8comp.conf
+elif [ -f /opt/k8comp/k8comp.conf ]
+then
+    source /opt/k8comp/k8comp.conf
 else
     notification+="Cannot locate k8comp.conf, using default values. "
 fi
