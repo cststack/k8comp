@@ -40,32 +40,32 @@ green="$(tput setaf 2)"
 yellow="$(tput setaf 3)"
 
 MAIN() {
-  if [ $pull ]
-  then
-    git_pull_only
-  else
-    set_environments
-    kube_vars
-    set_file
-    create_tmp
-# replace main variables on the main temporary file
-    replace_var
-    replace_xvar
-    replace_allvar
-# replace any xvars which are passed back from hiera
-    replace_xvar
-# replace the main variables if any are passed back on the main temp file from hiera
-    replace_var
-# replace any other variables if any are passed back from hiera
-    replace_allvar
-    external_files
-    print_file
-    clean
-  fi
+    if [ $pull ]
+    then
+        git_pull_only
+    else
+        set_environments
+        kube_vars
+        set_file
+        create_tmp
+        # replace main variables on the main temporary file
+        replace_var
+        replace_xvar
+        replace_allvar
+        # replace any xvars which are passed back from hiera
+        replace_xvar
+        # replace the main variables if any are passed back on the main temp file from hiera
+        replace_var
+        # replace any other variables if any are passed back from hiera
+        replace_allvar
+        external_files
+        print_file
+        clean
+    fi
 }
 
 usage() {
- message_green "
+    message_green "
  Usage: $programname [-h | pull | -p <project_name> -a <application> -e <environment> -b <git_branch>]
 
  Supported formats: yaml, yml, json
@@ -152,7 +152,7 @@ usage() {
 
   k8comp -p project -a application -e development
   k8comp -p project -a application -e development -x var1=value1
-  "
+    "
 }
 
 error() {
@@ -168,287 +168,290 @@ message_yellow() {
 }
 
 read_x_args() {
-  while (($#)) && [[ $1 != -* ]];
-  do args+=("$1");
-    shift;
-  done
+    while (($#)) && [[ $1 != -* ]];
+    do args+=("$1");
+        shift;
+    done
 }
 
 while [ $# -gt 0 ]; do
-# set the variable from input for all the arguments
-  input+=("$1")
-# set variables from input
-  case "$1" in
-    -t|--template|template)
-      if [ -n "$2" ]; then
-        template=$2
-        shift
-      fi
-    ;;
-    -p|--project|project)
-      if [ -n "$2" ]; then
-        project=$2
-        hrp="project=${2}"
-        hrall+="${hrp} "
-        shift
-      fi
-    ;;
-    -a|--application|application)
-      if [ -n "$2" ]; then
-        application=${2}
-        hra="application=${2%%/*}"
-        hrall+="${hra} "
-        shift
-      fi
-    ;;
-    -e|--environment|environment)
-      if [ -n "$2" ]; then
-        environment=$2
-        hre="environment=${2}"
-        hrall+="${hre} "
-        shift
-      fi
-    ;;
-    -l|--location|location)
-      if [ -n "$2" ]; then
-        location=$2
-        hrl="location=${2}"
-        hrall+="${hrl} "
-        shift
-      fi
-    ;;
-    -b|--branch|branch)
-      if [ -n "$2" ]; then
-        branch=$2
-        hrb="branch=${2}"
-        hrall+="${hrb} "
-        shift
-      fi
-    ;;
-    -x|--xtra|xtra)
-      read_x_args "${@:2}"
-    ;;
-    pull|--pull)
-      pull=true
-    ;;
-    helm|--helm)
-      helm_package=true
-    ;;
-    helm-package-version|--helm-package-version)
-        if [ -n "$2" ]; then
-          helm_package_version=$2
-          shift
-        fi
-    ;;
-    -h|--help)
-      usage
-      exit 0
-    ;;
-    -v|--version|version)
-      echo "$version"
-      exit 0
-    ;;
-  esac
-  shift
+    # set the variable from input for all the arguments
+    input+=("$1")
+    # set variables from input
+    case "$1" in
+        -t|--template|template)
+            if [ -n "$2" ]; then
+                template=$2
+                shift
+            fi
+            ;;
+        -p|--project|project)
+            if [ -n "$2" ]; then
+                project=$2
+                hrp="project=${2}"
+                hrall+="${hrp} "
+                shift
+            fi
+            ;;
+        -a|--application|application)
+            if [ -n "$2" ]; then
+                application=${2}
+                hra="application=${2%%/*}"
+                hrall+="${hra} "
+                shift
+            fi
+            ;;
+        -e|--environment|environment)
+            if [ -n "$2" ]; then
+                environment=$2
+                hre="environment=${2}"
+                hrall+="${hre} "
+                shift
+            fi
+            ;;
+        -l|--location|location)
+            if [ -n "$2" ]; then
+                location=$2
+                hrl="location=${2}"
+                hrall+="${hrl} "
+                shift
+            fi
+            ;;
+        -b|--branch|branch)
+            if [ -n "$2" ]; then
+                branch=$2
+                hrb="branch=${2}"
+                hrall+="${hrb} "
+                shift
+            fi
+            ;;
+        -x|--xtra|xtra)
+            read_x_args "${@:2}"
+            ;;
+        pull|--pull)
+            pull=true
+            ;;
+        helm|--helm)
+            helm_package=true
+            ;;
+        helm-package-version|--helm-package-version|hpv)
+            if [ -n "$2" ]; then
+                helm_package_version=$2
+                shift
+            fi
+            ;;
+        -v|--version|version)
+            echo "$version"
+            exit 0
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+    esac
+    shift
 done
 
 # function used only to pull specific branches as environments
 git_pull_only () {
-  if [ $pull ] && [ ${projects_repo} ]
-  then
-    if set_environments
+    if [ $pull ] && [ ${projects_repo} ]
     then
-      message_green "Successful pull ${branch:-${main_deployment_branch}} branch"
+        if set_environments
+        then
+            message_green "Successful pull ${branch:-${main_deployment_branch}} branch"
+        fi
+    else
+        error "Projects repo not declared"
     fi
-  else
-    error "Projects repo not declared"
-  fi
 }
 
 clone_git () {
-  if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
-  then
-    rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
-    if ! git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+    if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
     then
-      error "Error cloning $1"
-      exit 1
+        rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+        if ! git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+        then
+            error "Error cloning $1"
+            exit 1
+        fi
     fi
-  fi
-  cd $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
-  git reset --hard HEAD --quiet
-  git fetch --quiet --all
-  git pull --quiet --all
-  if ! git checkout ${branch:-${main_deployment_branch}} --quiet
-  then
-    error "Branch ${branch:-${main_deployment_branch}} not found"
-    exit 1
-  fi
+    cd $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
+    git reset --hard HEAD --quiet
+    git fetch --quiet --all
+    git pull --quiet --all
+    if ! git checkout ${branch:-${main_deployment_branch}} --quiet
+    then
+        error "Branch ${branch:-${main_deployment_branch}} not found"
+        exit 1
+    fi
 }
 
 # function used for environments based on branches
 set_environments() {
-  if [ "${k8comp_environments}" == "enabled" ] && [ "$auto_git_pull" == "true" ] || [ $pull ]
-  then
-    if [ -z $hieradata_repo ]
+    if [ "${k8comp_environments}" == "enabled" ] && [ "$auto_git_pull" == "true" ] || [ $pull ]
     then
-      clone_git $projects_repo
-    elif [ -n $hieradata_repo ]
-    then
-# get the project clone folder from the k8comp.conf. Take only the last folder name of the variable
-      clone_git $projects_repo ${projects_path##*/}
-      clone_git $hieradata_repo hieradata
+        if [ -z $hieradata_repo ]
+        then
+            clone_git $projects_repo
+        elif [ -n $hieradata_repo ]
+        then
+            # get the project clone folder from the k8comp.conf. Take only the last folder name of the variable
+            clone_git $projects_repo ${projects_path##*/}
+            clone_git $hieradata_repo hieradata
+        fi
     fi
-  fi
-  if [[ "${k8comp_environments}" == "enabled" && -z ${branch} ]]
-  then
-    hrb="branch=${branch:-${main_deployment_branch}}"
-    hrall+="${hrb} "
-  fi
+    if [[ "${k8comp_environments}" == "enabled" && -z ${branch} ]]
+    then
+        hrb="branch=${branch:-${main_deployment_branch}}"
+        hrall+="${hrb} "
+    fi
 }
 
 # the function will check the variables mapping and replace them in the deployment
 # if the variables cannot be found the cmd values will be used
 kube_vars(){
-  for i in ${hrall[@]}
-  do
-    find_var=$(grep -vs '^#' $mapping/* | grep -h "^${i##*=}=")
-# all variables form extras/mapping will be passed to hiera via mappings variable
-    mappings+=($find_var)
-    if [[ "${i%%=*}" == "project" ]]
-    then
-      if [ -z $find_var ]
-      then
-        h_project=$project
-      else
-        pvar=$find_var
-        h_project=${pvar##*=}
-      fi
-    elif [[ "${i%%=*}" == "application" ]]
-    then
-      if [ -z $find_var ]
-      then
-        h_application=${application%%/*}
-      else
-        avar=$find_var
-        h_application=${avar##*=}
-      fi
-    elif [[ "${i%%=*}" == "environment" ]]
-    then
-      if [ -z $find_var ]
-      then
-        h_environment=$environment
-      else
-        evar=$find_var
-        h_environment=${evar##*=}
-      fi
-    elif [[ "${i%%=*}" == "location" ]]
-    then
-      if [ -z $find_var ]
-      then
-        h_location=$location
-      else
-        lvar=$find_var
-        h_location=${lvar##*=}
-      fi
-    fi
-done
+    for i in ${hrall[@]}
+    do
+        find_var=$(grep -vs '^#' $mapping/* | grep -h "^${i##*=}=")
+        # all variables form extras/mapping will be passed to hiera via mappings variable
+        mappings+=($find_var)
+        if [[ "${i%%=*}" == "project" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_project=$project
+            else
+                pvar=$find_var
+                h_project=${pvar##*=}
+            fi
+        elif [[ "${i%%=*}" == "application" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_application=${application%%/*}
+            else
+                avar=$find_var
+                h_application=${avar##*=}
+            fi
+        elif [[ "${i%%=*}" == "environment" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_environment=$environment
+            else
+                evar=$find_var
+                h_environment=${evar##*=}
+            fi
+        elif [[ "${i%%=*}" == "location" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_location=$location
+            else
+                lvar=$find_var
+                h_location=${lvar##*=}
+            fi
+        fi
+    done
 }
 
 set_file() {
-# if multiple environments are enabled set a variable with the new folder path
-  if [ "${k8comp_environments}" == "enabled" ]
-  then
-    envs="environments/${branch:-${main_deployment_branch}}/${projects_path##*/}"
-    err1="or ${projects_path##*/}/${envs}"
-  fi
-
-  if [ -z $environment ]
-  then
-    err2="and no environment specified"
-  fi
-
-  err0="No deployment files found on ${projects_path##*/}/$project ${err1} ${err2}"
-
-# if project, application and any other argument is declared
-  if [[ ! -z ${template} ]]
-  then
-      xfile=${projects_path}/${envs}/${templates_path}/${template}.*
-  elif [[ ! -z "${project}" && ! -z "${application}" ]]
-  then
-# test if the application is a file or a folder
-
-    if [ -f ${projects_path}/${envs}/${project}/${application}.* ]
+    # if multiple environments are enabled set a variable with the new folder path
+    if [ "${k8comp_environments}" == "enabled" ]
     then
-      xfile=${projects_path}/${envs}/${project}/${application}.*
-
-    elif [ -d ${projects_path}/${envs}/${project}/${application} ]
-    then
-      xfolder=${projects_path}/${envs}/${project}/${application}
-      xfile=${xfolder}/*.*
-    else
-      error $err0
-      exit 1
+        envs="environments/${branch:-${main_deployment_branch}}/${projects_path##*/}"
+        err1="or ${projects_path##*/}/${envs}"
     fi
 
-# if project is not declared
-elif [[ -z "${project}" && "${application}" ]]
- then
-# test if the application is a file or a folder
-  if [ -f ${projects_path}/${envs}/${application}.* ]
-  then
-    xfile=${projects_path}/${envs}/${application}.*
-  elif [ -d ${projects_path}/${envs}/${application} ]
-  then
-    xfolder=${projects_path}/${envs}/${application}
-    xfile=${xfolder}/*.*
-  else
-    error $err0
-    exit 1
-  fi
-# if project and any other argument is declared other than application
-  elif [[ "${project}" ]]
-  then
-    if [ -f ${projects_path}/${envs}/${project}.* ]
+    if [ -z $environment ]
     then
-      xfile=${projects_path}/${envs}/${project}.*
-    else
-      error $err0
-      exit 1
+        err2="and no environment specified"
     fi
-  fi
+
+    err0="No deployment files found on ${projects_path##*/}/$project ${err1} ${err2}"
+
+    # if project, application and any other argument is declared
+    if [[ ! -z ${template} ]]
+    then
+        xfile=${projects_path}/${envs}/${templates_path}/${template}.*
+    elif [[ ! -z "${project}" && ! -z "${application}" ]]
+    then
+        # test if the application is a file or a folder
+        if [ -f ${projects_path}/${envs}/${project}/${application}.* ]
+        then
+            xfile=${projects_path}/${envs}/${project}/${application}.*
+
+        elif [ -d ${projects_path}/${envs}/${project}/${application} ]
+        then
+            xfolder=${projects_path}/${envs}/${project}/${application}
+            xfile=${xfolder}/*.*
+        else
+            error $err0
+            exit 1
+        fi
+        # if project is not declared
+    elif [[ -z "${project}" && "${application}" ]]
+    then
+        # test if the application is a file or a folder
+        if [ -f ${projects_path}/${envs}/${application}.* ]
+        then
+            xfile=${projects_path}/${envs}/${application}.*
+        elif [ -d ${projects_path}/${envs}/${application} ]
+        then
+            xfolder=${projects_path}/${envs}/${application}
+            xfile=${xfolder}/*.*
+        else
+            error $err0
+            exit 1
+        fi
+        # if project and any other argument is declared other than application
+    elif [[ "${project}" ]]
+    then
+        if [ -f ${projects_path}/${envs}/${project}.* ]
+        then
+            xfile=${projects_path}/${envs}/${project}.*
+        else
+            error $err0
+            exit 1
+        fi
+    else
+        usage
+        exit 0
+    fi
 }
 
 create_tmp() {
-  tmp_file=$(mktemp /tmp/k8comp.XXXXXX)
-# set the start of the file
-  for eachfile in ${xfile}
-  do
-    if [[ "$(head -1 ${eachfile})" =~ "---" ]]
-    then
-      grep -v '^#' ${eachfile} >> ${tmp_file}
-    else
-      echo -e "\n---" >> ${tmp_file}
-      grep -v '^#' ${eachfile} >> ${tmp_file}
-    fi
-  done
-  echo " " >> ${tmp_file}
+    tmp_file=$(mktemp /tmp/k8comp.XXXXXX)
+    # set the start of the file
+    for eachfile in ${xfile}
+    do
+        if [[ "$(head -1 ${eachfile})" =~ "---" ]]
+        then
+            grep -v '^#' ${eachfile} >> ${tmp_file}
+        else
+            echo -e "\n---" >> ${tmp_file}
+            grep -v '^#' ${eachfile} >> ${tmp_file}
+        fi
+    done
+    echo " " >> ${tmp_file}
 }
 
 replace_var() {
-  sed -i "s|%{project}|${h_project}|g" ${tmp_file}
-  sed -i "s|%{application}|${h_application}|g" ${tmp_file}
-  sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
-  sed -i "s|%{location}|${h_location}|g" ${tmp_file}
+    sed -i "s|%{project}|${h_project}|g" ${tmp_file}
+    sed -i "s|%{application}|${h_application}|g" ${tmp_file}
+    sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
+    sed -i "s|%{location}|${h_location}|g" ${tmp_file}
 }
 
 replace_xvar() {
-  for xvar in ${args[@]}
-  do
-# avoind any conflicts when the variable include = character
-    xvar2=$(echo ${xvar} | cut -c $(($(echo ${xvar%%=*} | awk '{ print length }')+2))-)
-    sed -i "s|%{${xvar%%=*}}|${xvar2}|g" ${tmp_file}
-  done
+    for xvar in ${args[@]}
+    do
+        # avoind any conflicts when the variable include = character
+        xvar2=$(echo ${xvar} | cut -c $(($(echo ${xvar%%=*} | awk '{ print length }')+2))-)
+        # owerwrite variables with defaults with xtra variables declared on cmd
+        xvar_new_value=$(grep -oP '\%{\K[^\}]+' ${tmp_file} | grep -w ${xvar%%=*} |uniq)
+        sed -i "s|%{${xvar_new_value}}|${xvar2}|g" ${tmp_file}
+    done
 }
 
 add_multiline_var () {
@@ -461,88 +464,88 @@ __EOF__
 }
 
 replace_allvar() {
-# set a different IFS in case the default variables have white spaces
-  OLDIFS=$IFS
-  IFS=$(echo -en "\n\b")
-# find all the variables in the format %{}
-  for variable in $(grep -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
-  do
-# restore the old IFS
-    IFS=$OLDIFS
-# added hiera hash support
-    query="${custom_hiera} ${variable%% default *} ${hrall[@]} ${mappings[@]}"
-    hr="${hiera_path}/hiera -h -c ${query}"
-    if ! ${hr} > /dev/null 2>&1;
-    then
-        hr="${hiera_path}/hiera -c ${query}"
-    fi
-# if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
-    if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]]
-    then
-        nf_var+="${variable%% default *} "
-      if [ "$var_fail_safe" == "true" ]
-      then
-        error "${variable%% default *} not found in hiera"
-        clean
-        exit 1
-      else
-# avoid nil value being added on the deployment file
-        sed -i "s|%{${variable}}||g" ${tmp_file}
-      fi
+    # set a different IFS in case the default variables have white spaces
+    OLDIFS=$IFS
+    IFS=$(echo -en "\n\b")
+    # find all the variables in the format %{}
+    for variable in $(grep -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
+    do
+        # restore the old IFS
+        IFS=$OLDIFS
+        # added hiera hash support
+        query="${custom_hiera} ${variable%% default *} ${hrall[@]} ${mappings[@]}"
+        hr="${hiera_path}/hiera -h -c ${query}"
+        if ! ${hr} > /dev/null 2>&1;
+        then
+            hr="${hiera_path}/hiera -c ${query}"
+        fi
+        # if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
+        if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]]
+        then
+            nf_var+="${variable%% default *} "
+            if [ "$var_fail_safe" == "true" ]
+            then
+                error "${variable%% default *} not found in hiera"
+                clean
+                exit 1
+            else
+                # avoid nil value being added on the deployment file
+                sed -i "s|%{${variable}}||g" ${tmp_file}
+            fi
 
-# if variable has more lines
-    elif [[ "$($hr)" =~ '=>' ]]
-    then
-# counting the number of the same variable
-      for each in $(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
-      do
-       variable_line_nr+="${each} "
-      done
-# for each variable in the files run a loop and replace the value
-      for i in ${variable_line_nr[@]}
-      do
-# getting the new line of the variable
-        var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
-        var_file=$(mktemp /tmp/k8comp.XXXXXX)
-        if [ ! -z ${var_line} ]
+            # if variable has more lines
+        elif [[ "$($hr)" =~ '=>' ]]
         then
-          leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
-          add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
-          $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
-# delete line
-          sed -i "${var_line}d" ${tmp_file}
-          add_multiline_var ${tmp_file} ${var_line} ${var_file}
-        fi
-        if [ -f $var_file ]
+            # counting the number of the same variable
+            for each in $(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
+            do
+                variable_line_nr+="${each} "
+            done
+            # for each variable in the files run a loop and replace the value
+            for i in ${variable_line_nr[@]}
+            do
+                # getting the new line of the variable
+                var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
+                var_file=$(mktemp /tmp/k8comp.XXXXXX)
+                if [ ! -z ${var_line} ]
+                then
+                    leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
+                    add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
+                    $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
+                    # delete line
+                    sed -i "${var_line}d" ${tmp_file}
+                    add_multiline_var ${tmp_file} ${var_line} ${var_file}
+                fi
+                if [ -f $var_file ]
+                then
+                    rm -f $var_file
+                fi
+            done
+            # if there is no hiera value and default is available use the default value
+        elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" != "${variable##* default }" ]]
         then
-          rm -f $var_file
+            sed -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
+        else
+            sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
         fi
-      done
-# if there is no hiera value and default is available use the default value
-    elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" != "${variable##* default }" ]]
-    then
-        sed -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
-    else
-      sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
-    fi
-  done
+    done
 }
 
 external_files() {
-  urls=$(grep '^http' ${tmp_file})
+    urls=$(grep '^http' ${tmp_file})
 
-  for u in ${urls}
-  do
-    sed -i "s|${u}||g" ${tmp_file}
-    ext=$(curl -qs ${u})
-    if [[ "${ext} | head -1" =~ "---" ]]
-    then
-      echo "${ext}" >> ${tmp_file}
-    else
-      echo -e "\n---" >> ${tmp_file}
-      echo "${ext}" >> ${tmp_file}
-    fi
-  done
+    for u in ${urls}
+    do
+        sed -i "s|${u}||g" ${tmp_file}
+        ext=$(curl -qs ${u})
+        if [[ "${ext} | head -1" =~ "---" ]]
+        then
+            echo "${ext}" >> ${tmp_file}
+        else
+            echo -e "\n---" >> ${tmp_file}
+            echo "${ext}" >> ${tmp_file}
+        fi
+    done
 }
 
 helm_output() {
@@ -574,33 +577,32 @@ version: ${helmpv}" > ./${helm_package_name}/Chart.yaml
 }
 
 print_file() {
-  # set notification variable
-  notification+="Deployment from ${xfile}"
-
-  border="######################"
-  # print file on stdout
-  cat ${tmp_file} | sed '/^$/d'
-  # echo notification
-  echo ${border}
-  echo ""
-  echo "# [INFO] ${notification}"
-  if [ ! -z "${nf_var[@]}" ]
-  then
+    # set notification variable
+    notification+="Deployment from ${xfile}"
+    border="######################"
+    # print file on stdout
+    cat ${tmp_file} | sed '/^$/d'
+    # echo notification
+    echo ${border}
     echo ""
-    echo "# The following variables couldn't be retrieved from hiera: ${nf_var[@]}"
-    echo ""
-  fi
-  if [[ "${helm_package}" == "true" ]]
-  then
-      helm_output "${tmp_file}"
-  fi
+    echo "# [INFO] ${notification}"
+    if [ ! -z "${nf_var[@]}" ]
+    then
+        echo ""
+        echo "# The following variables couldn't be retrieved from hiera: ${nf_var[@]}"
+        echo ""
+    fi
+    if [[ "${helm_package}" == "true" ]]
+    then
+        helm_output "${tmp_file}"
+    fi
 }
 
 clean() {
-  if [ -f ${tmp_file} ]
-  then
-    rm -f ${tmp_file}
-  fi
+    if [ -f ${tmp_file} ]
+    then
+        rm -f ${tmp_file}
+    fi
 }
 
 MAIN

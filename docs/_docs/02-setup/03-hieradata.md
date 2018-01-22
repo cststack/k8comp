@@ -18,14 +18,15 @@ The variables use to query hiera are:
 ## [](#variables)Variables
 
 The variable format is %{VARIABLE default "DEFAULT_VALUE"} or %{VARIABLE}.  
-The variable retrieval order is:
+The variable priority order is:
+- -x variables (cmd argument)
 - hiera
 - default value specified as part of variable template  
 
 > The value before "default" (in the above example "VARIABLE") will be retrieved from hiera. If no value is available in hiera the value after "default" (in the above example "DEFAULT_VALUE") will be used as default.
 
 There are few types of variables supported:
-- single value variables
+- single value variables which can be declared using -x argument, from hiera or template default
 - multi line variables (only for yaml template). These are handy for all kind of headers, metadata values or any other data difference between deployments which has more than a single value.  
     **Example:**  
     Instead of having in each template the kind and API version the configs can be extracted to variables in common.yaml
