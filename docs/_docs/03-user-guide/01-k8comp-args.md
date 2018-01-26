@@ -209,9 +209,27 @@ k8comp -a andromeda -e development -b development
 
 ## [](#helm)helm
 
-Helm argument is used to create a helm chart in the current directory. K8comp needs to be properly configured in order to have this working.   
+Helm argument is used to create a helm charts. K8comp needs to be properly configured in order to have this working.   
 The flag is automatically selected as part of the k8comp helm plugin.
+
+To create a helm chart using k8comp first install the k8comp plugin for helm. Once completed execute the k8comp command prefixed by helm.
+The command will create a helm chart in 'pwd' and push that package to a repository (if available).  
+To deploy the chart the usual helm commands can be used.
+
+> The helm chart will be named based on the k8comp command. If the compile is successful there will be a notification message with the name of the application.  
+
+**Example:**  
+```
+helm k8comp -p galaxies -a andromeda -e development
+```
 
 ## [](#helm-package-version)helm-package-version
 
-The argument can be only used in conjunction with `helm` argument. It used to specify a helm chart version of a specific application.
+The argument can be only used in conjunction with `helm` argument and it's used to specify a helm chart version of a specific application.  
+By default the helm deployment will have as a version "Year.MonthDay.HourMinuteSeconds".  
+To overwrite this behaviour specify the --helm-package-version in the build command.  
+
+**Example:**  
+```
+helm k8comp -p galaxies -a andromeda -e development --helm-package-version 3.1.2
+```
