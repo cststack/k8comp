@@ -209,7 +209,7 @@ k8comp -a andromeda -e development -b development
 
 ## [](#helm)helm
 
-Helm argument is used to create a helm charts. K8comp needs to be properly configured in order to have this working.   
+Helm argument is used to create a helm chart. K8comp needs to be properly configured in order to have this working.   
 The flag is automatically selected as part of the k8comp helm plugin.
 
 To create a helm chart using k8comp first install the k8comp plugin for helm. Once completed execute the k8comp command prefixed by helm.
