@@ -26,8 +26,8 @@ secret_version: "%%{::}{application}-%%{::}{container_tag}"
 For more advanced customisations the multiline variables might be a better fit. A multiline variable can collect multiple values from hiera, [explanation](https://stackoverflow.com/questions/40615946/iterate-over-a-deeply-nested-hiera-hash-in-puppet-manifest). This comes handy when different environments have different number of arguments.
 
 **Example**  
-An application will require a variable "z" set to 300 on all environments but for each environment it will require a variable "y" with a different value.
-This can be easily achieved by setting at the environment level the variable "y" with different value on each environment and on the application level the variable "z" with the common value of 300.  
+An application will require a variable ***z*** set to 300 on all environments but for each environment it will require a variable ***y*** with a different value.
+This can be easily achieved by setting at the environment level the variable ***y*** with different value on each environment and on the application level the variable ***z*** with the common value of 300.  
 > Please note that the format needs to be in a multiline style  
 
 Hiera will return the multiline variable with the correct values for each environment
