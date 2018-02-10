@@ -48,6 +48,7 @@ MAIN() {
         kube_vars
         set_file
         create_tmp
+        external_files
         # replace main variables on the main temporary file
         replace_var
         replace_xvar
@@ -58,7 +59,6 @@ MAIN() {
         replace_var
         # replace any other variables if any are passed back from hiera
         replace_allvar
-        external_files
         print_file
         clean
     fi
@@ -509,8 +509,8 @@ replace_allvar() {
                 var_file=$(mktemp /tmp/k8comp.XXXXXX)
                 if [ ! -z ${var_line} ]
                 then
-                    leading_spaces=$(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')
-                    add_leading_spaces=$(seq -s' ' ${leading_spaces}|tr -d '[:digit:]')
+                    leading_spaces=$(($(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')-1))
+                    add_leading_spaces=$(printf %${leading_spaces}s)
                     $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
                     # delete line
                     sed -i "${var_line}d" ${tmp_file}
