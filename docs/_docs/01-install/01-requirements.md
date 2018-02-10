@@ -28,3 +28,12 @@ gem install --no-ri --no-rdoc hiera-eyaml hiera
 apt-get install rubygems ed
 gem install --no-ri --no-rdoc hiera-eyaml hiera
 ```
+
+### [](#macos)Mac OS dependencies (alpha)
+```
+gem install --no-ri --no-rdoc hiera-eyaml hiera
+ln -sfn $(which hiera) /usr/local/bin/hiera
+brew install gnu-sed --with-default-names
+brew install grep --with-default-names
+brew install ed --with-default-names
+```
