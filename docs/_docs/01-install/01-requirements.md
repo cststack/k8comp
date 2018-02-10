@@ -29,7 +29,8 @@ apt-get install rubygems ed
 gem install --no-ri --no-rdoc hiera-eyaml hiera
 ```
 
-### [](#macos)Mac OS dependencies (alpha)
+### [](#macos)Mac OS dependencies
+(alpha)
 ```
 gem install --no-ri --no-rdoc hiera-eyaml hiera
 ln -sfn $(which hiera) /usr/local/bin/hiera
