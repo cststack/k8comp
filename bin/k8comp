@@ -101,6 +101,24 @@ usage() {
                                          variable in the yaml|yml|json template.
                                          Available only in hiera
 
+ -d | --product <product> :              The product will be checked from hiera. If no values are
+                                         found in hiera the variables will not be replaced.
+                                         NOT PART OF projects FILE STRUCTURE but can be added as
+                                         variable in the yaml|yml|json template.
+                                         Available only in hiera
+
+ -r | --role <role> :                    The role will be checked from hiera. If no values are
+                                         found in hiera the variables will not be replaced.
+                                         NOT PART OF projects FILE STRUCTURE but can be added as
+                                         variable in the yaml|yml|json template.
+                                         Available only in hiera
+
+ -n | --namespace <namespace> :          The namespace will be checked from hiera. If no values are
+                                         found in hiera the variables will not be replaced.
+                                         NOT PART OF projects FILE STRUCTURE but can be added as
+                                         variable in the yaml|yml|json template.
+                                         Available only in hiera
+
  -t | --template <template> :            The templates folder can be configured on the k8comp.conf.
                                          The base location is on the projects folder.
                                          Can be used in conjunction with any of the main variables.
@@ -206,6 +224,30 @@ while [ $# -gt 0 ]; do
                 environment=$2
                 hre="environment=${2}"
                 hrall+="${hre} "
+                shift
+            fi
+            ;;
+        -d|--product|product)
+            if [ -n "$2" ]; then
+                product=$2
+                hrd="product=${2}"
+                hrall+="${hrd} "
+                shift
+            fi
+            ;;
+        -r|--role|role)
+            if [ -n "$2" ]; then
+                role=$2
+                hrr="role=${2}"
+                hrall+="${hrr} "
+                shift
+            fi
+            ;;
+        -n|--namespace|namespace)
+            if [ -n "$2" ]; then
+                namespace=$2
+                hrm="namespace=${2}"
+                hrall+="${hrm} "
                 shift
             fi
             ;;
@@ -342,6 +384,33 @@ kube_vars(){
                 evar=$find_var
                 h_environment=${evar##*=}
             fi
+        elif [[ "${i%%=*}" == "product" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_product=$product
+            else
+                evar=$find_var
+                h_product=${evar##*=}
+            fi
+        elif [[ "${i%%=*}" == "role" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_role=$role
+            else
+                evar=$find_var
+                h_role=${evar##*=}
+            fi
+        elif [[ "${i%%=*}" == "namespace" ]]
+        then
+            if [ -z $find_var ]
+            then
+                h_namespace=$namespace
+            else
+                evar=$find_var
+                h_namespace=${evar##*=}
+            fi
         elif [[ "${i%%=*}" == "location" ]]
         then
             if [ -z $find_var ]
@@ -440,6 +509,9 @@ replace_var() {
     sed -i "s|%{project}|${h_project}|g" ${tmp_file}
     sed -i "s|%{application}|${h_application}|g" ${tmp_file}
     sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
+    sed -i "s|%{product}|${h_product}|g" ${tmp_file}
+    sed -i "s|%{role}|${h_role}|g" ${tmp_file}
+    sed -i "s|%{namespace}|${h_namespace}|g" ${tmp_file}
     sed -i "s|%{location}|${h_location}|g" ${tmp_file}
 }
 
