@@ -233,3 +233,34 @@ To overwrite this behaviour specify the --helm-package-version in the build comm
 ```
 helm k8comp -p galaxies -a andromeda -e development --helm-package-version 3.1.2
 ```
+
+## [](#aws-sm)AWS Secrets Manager
+
+k8comp can pull secrets from AWS Secrets Manager. Locally awscli tool will need to be installed. If the deployment is done from an instance which can assume a role there is no need to provide any credentials. For the awscli configuration please check the official AWS documentation.
+
+The variables can be from the main template file or from hieradata.
+
+The variable prefix default is AWSSM and can be set as part of the config with `aws_sm_prefix`.
+
+Hieradata variable to retrieve a single value from the main secret in base64 format
+```
+AWSS(BASE64,secretName:singleVariable)
+```
+
+Hieradata variable to retrieve a single value from the main secret in plain text
+```
+AWSS(secretName:singleVariable)
+```
+
+Hieradata variable to retrieve the full secret in base64 format
+```
+AWSS(BASE64,secretName)
+```
+
+To set a default variable in the main deployment files use %{} for the secret like on the below examples
+```
+%{AWSS(secretName:singleVariable)}
+%{AWSS(BASE64,secretName:singleVariable)}
+```
+
+> Currently multiline AWS secrets variables in plain text are not supported

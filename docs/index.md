@@ -33,6 +33,7 @@ How k8comp works?
 - multi branch deployment
 - support for remote templates
 - use as helm plugin
+- support for AWS Secrets Manager
 ```
 helm plugin install https://github.com/cststack/k8comp
 ```
