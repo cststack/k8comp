@@ -16,6 +16,7 @@ auto_git_pull=false #git pull before each deployment
 main_deployment_branch=master #works in conjunction with `k8comp_environment`
 projects_repo= #works in conjunction with `auto_git_pull`
 hieradata_repo= #works in conjunction with `auto_git_pull`
+aws_sm_prefix=AWSSM
 
 # Added option to load k8comp.conf dynamically
 if [ -f ${k8comp_dir}/k8comp.conf ]
@@ -294,6 +295,44 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Darwin*)
+      base64_args="";;
+    *)
+      base64_args="-w 0";;
+esac
+
+convert_to_base64 () {
+  echo "$1" | base64 ${base64_args}
+}
+
+aws_sm_function () {
+    nv=${1##*(}
+    nv2=${nv%?}
+    nv3=${nv2##*BASE64,}
+    nv4=${nv3%%:*}
+    aws_sm_secret=$(aws secretsmanager get-secret-value --query SecretString --secret-id $nv4 --version-stage AWSCURRENT --output text)
+
+    if [[ "${nv2}" =~ ":" ]]
+    then
+      aws_sm_secret=$(echo "${aws_sm_secret}" | grep -w ${nv3##*:} | awk '{print $2}' | sed s/\"//g )
+    fi
+
+    # if [ "${aws_sm_secret}" = "" ]
+    # then
+    #   # echo "NOT-FOUND"
+    #   echo ${aws_sm_secret}
+    #   nf_var+="$1 "
+    # el
+    if [[ "${nv2}" =~ "BASE64" ]]
+    then
+      convert_to_base64 "${aws_sm_secret}"
+    else
+      echo "${aws_sm_secret}"
+    fi
+}
+
 # function used only to pull specific branches as environments
 git_pull_only () {
     if [ $pull ] && [ ${projects_repo} ]
@@ -551,8 +590,30 @@ replace_allvar() {
         then
             hr="${hiera_path}/hiera -c ${query}"
         fi
+        # check for aws sm variables from hieradata
+        if [[ "$($hr)" =~ "${aws_sm_prefix}" ]]
+        then
+          aws_var=$(aws_sm_function "$($hr)")
+          if [ "${aws_var}" = "" ]
+          then
+            nf_var+="$($hr) "
+            sed -i "s|%{${variable}}||g" ${tmp_file}
+          else
+           sed -i "s|%{${variable}}|${aws_var}|g" ${tmp_file}
+          fi
+        # check for aws sm variables from the deployment files
+        elif [[ "$variable" =~ "${aws_sm_prefix}" ]]
+          then
+            aws_var=$(aws_sm_function "$variable")
+            if [ "${aws_var}" = "" ] || [ "$aws_var" = "Cg==" ]
+            then
+              nf_var+="$variable "
+              sed -i "s|%{${variable}}||g" ${tmp_file}
+            else
+             sed -i -e "s|%{${variable}}|${aws_var}|g" ${tmp_file}
+            fi
         # if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
-        if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]]
+        elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]] && [[ ! "$($hr)" =~ "${aws_sm_prefix}" ]]
         then
             nf_var+="${variable%% default *} "
             if [ "$var_fail_safe" == "true" ]
@@ -564,7 +625,6 @@ replace_allvar() {
                 # avoid nil value being added on the deployment file
                 sed -i "s|%{${variable}}||g" ${tmp_file}
             fi
-
             # if variable has more lines
         elif [[ "$($hr)" =~ '=>' ]]
         then
