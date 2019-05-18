@@ -4,7 +4,8 @@ title: About
 
 K8comp is a tool which substitutes any templates variables declared in the format %{VARIABLE default "DEFAULT_VALUE"} or %{VARIABLE} with values from a files hierarchy using [hiera](https://rubygems.org/gems/hiera/versions/3.2.0).
 
-AWS Secrets Manager is also supported with the following variables format , AWSSM(BASE64,aws-secret-manager-id) from hiera or %{AWSSM(BASE64,aws-secret-manager-id)} from templates. Check the [How to]({{ site.baseurl }}04-how-to/02-encrypt-variables/#aws-sm-secret) section of the documentation for more details.
+AWS Secrets Manager is also supported with the following variables format, AWSSM(BASE64,aws-secret-manager-id) from hiera or %{AWSSM(BASE64,aws-secret-manager-id)} from templates. Check the [How to]({{ site.baseurl }}04-how-to/02-encrypt-variables/#aws-sm-secret) section of the documentation for more details.
+
 The tool was created to simplify apps deployments for Kubernetes but it can be used to template any other type of files.  
 
 K8comp doesn't interact with Kubernetes API in any way which means is not tight to any Kubernetes version, it just prints to stdout the deployment files. Because of this the user needs to make sure the deployment files are compatible with the Kubernetes version where the files will be deployed.
