@@ -147,3 +147,53 @@ archive_var: "ENC[PKCS7,MIICzQYJKoZIhvcNAQcDoIICvjCCAroCAQAxggEhMIIBHQIBADAFMAAC
 ```
 k8comp -a nginx -e development
 ```
+
+## [](#aws-sm-secret)AWS Secrets Manager variable
+
+k8comp can retrieve secrets from AWS Secrets Manager also. The followings are currently supported:
+- hiera variable in base64 format, single line `AWS(BASE64,remoteVariableName:value)` and multiline `AWS(BASE64,remoteVariableName)`
+- hiera variable in plain text, single line `AWS(remoteVariableName:value)`
+- template variable in base64 format, `${AWS(BASE64,remoteVariableName:value)}` and multiline `${AWS(BASE64,remoteVariableName)}`
+- template variable in plain text format, single line `${AWS(remoteVariableName:value)}`
+
+Because k8comp relies on awscli to retrieve the secrets iam role authentication is also supported.
+Below is an example of ~/.aws/credentials file which will assume a role from outside of AWS infrastructure.
+
+```
+[default]
+region = eu-west-1
+aws_access_key_id = ACCESS_KEY
+aws_secret_access_key = SECRET_KEY
+
+[development]
+role_arn = arn:aws:iam::123456789102:role/k8comp-deployment
+region = eu-west-1
+source_profile = default
+```
+or from an EC2 instance
+
+```
+[development]
+role_arn = arn:aws:iam::123456789102:role/k8comp-deployment
+credential_source = Ec2InstanceMetadata
+```
+By running below command the role will be assumed and the secrets will be retrieved from AWS Secrets Manager.
+
+```
+k8comp -p galaxies -a andromeda/rc -e development --profile development
+```
+
+To retrieve secrets from AWS Secrets Manager without assuming a role just use k8comp without specifying a profile.
+
+Below is an example of ~/.aws/credentials
+```
+[default]
+region = eu-west-1
+aws_access_key_id = ACCESS_KEY
+aws_secret_access_key = SECRET_KEY
+```
+and below is the k8comp command
+```
+k8comp -p galaxies -a andromeda/rc -e development
+```
+> For more information about role assume and how to configure the access using Multi Factor Authentication check official AWS documentation.
