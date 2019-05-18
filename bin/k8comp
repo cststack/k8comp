@@ -309,13 +309,21 @@ done
 unameOut="$(uname -s)"
 case "${unameOut}" in
     Darwin*)
-      base64_args="";;
+      base64=gbase64
+      ed=ged
+      sed=gsed
+      grep=ggrep
+      ;;
     *)
-      base64_args="-w 0";;
+      base64=base64
+      ed=ed
+      sed=sed
+      grep=grep
+      ;;
 esac
 
 convert_to_base64 () {
-  echo "$1" | base64 ${base64_args}
+  echo "$1" | ${base64} -w 0
 }
 
 aws_sm_function () {
@@ -327,7 +335,7 @@ aws_sm_function () {
 
     if [[ "${nv2}" =~ ":" ]]
     then
-      aws_sm_secret=$(echo "${aws_sm_secret}" | grep -w ${nv3##*:} | awk '{print $2}' | sed s/\"//g )
+      aws_sm_secret=$(echo "${aws_sm_secret}" | ${grep} -w ${nv3##*:} | awk '{print $2}' | ${sed}  s/\"//g )
     fi
 
     if [[ "${nv2}" =~ "BASE64" ]]
@@ -352,7 +360,7 @@ git_pull_only () {
 }
 
 clone_git () {
-    if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
+    if ! ${grep} -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
     then
         rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
         if ! git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
@@ -398,7 +406,7 @@ set_environments() {
 kube_vars(){
     for i in ${hrall[@]}
     do
-        find_var=$(grep -vs '^#' $mapping/* | grep -h "^${i##*=}=")
+        find_var=$(${grep} -vs '^#' $mapping/* | ${grep} -h "^${i##*=}=")
         # all variables form extras/mapping will be passed to hiera via mappings variable
         mappings+=($find_var)
         if [[ "${i%%=*}" == "project" ]]
@@ -540,23 +548,23 @@ create_tmp() {
     do
         if [[ "$(head -1 ${eachfile})" =~ "---" ]]
         then
-            grep -v '^#' ${eachfile} >> ${tmp_file}
+            ${grep} -v '^#' ${eachfile} >> ${tmp_file}
         else
             echo -e "\n---" >> ${tmp_file}
-            grep -v '^#' ${eachfile} >> ${tmp_file}
+            ${grep} -v '^#' ${eachfile} >> ${tmp_file}
         fi
     done
     echo " " >> ${tmp_file}
 }
 
 replace_var() {
-    sed -i "s|%{project}|${h_project}|g" ${tmp_file}
-    sed -i "s|%{application}|${h_application}|g" ${tmp_file}
-    sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
-    sed -i "s|%{product}|${h_product}|g" ${tmp_file}
-    sed -i "s|%{role}|${h_role}|g" ${tmp_file}
-    sed -i "s|%{namespace}|${h_namespace}|g" ${tmp_file}
-    sed -i "s|%{location}|${h_location}|g" ${tmp_file}
+    ${sed}  -i "s|%{project}|${h_project}|g" ${tmp_file}
+    ${sed}  -i "s|%{application}|${h_application}|g" ${tmp_file}
+    ${sed}  -i "s|%{environment}|${h_environment}|g" ${tmp_file}
+    ${sed}  -i "s|%{product}|${h_product}|g" ${tmp_file}
+    ${sed}  -i "s|%{role}|${h_role}|g" ${tmp_file}
+    ${sed}  -i "s|%{namespace}|${h_namespace}|g" ${tmp_file}
+    ${sed}  -i "s|%{location}|${h_location}|g" ${tmp_file}
 }
 
 replace_xvar() {
@@ -565,13 +573,13 @@ replace_xvar() {
         # avoind any conflicts when the variable include = character
         xvar2=$(echo ${xvar} | cut -c $(($(echo ${xvar%%=*} | awk '{ print length }')+2))-)
         # owerwrite variables with defaults with xtra variables declared on cmd
-        xvar_new_value=$(grep -oP '\%{\K[^\}]+' ${tmp_file} | grep -w ${xvar%%=*} |uniq)
-        sed -i "s|%{${xvar_new_value}}|${xvar2}|g" ${tmp_file}
+        xvar_new_value=$(${grep} -oP '\%{\K[^\}]+' ${tmp_file} | ${grep} -w ${xvar%%=*} |uniq)
+        ${sed}  -i "s|%{${xvar_new_value}}|${xvar2}|g" ${tmp_file}
     done
 }
 
 add_multiline_var () {
-ed ${1}  > /dev/null 2>&1 << __EOF__
+${ed} ${1}  > /dev/null 2>&1 << __EOF__
 ${2}i
 $(cat ${3})
 .
@@ -588,7 +596,7 @@ check_var_fail_safe () {
       exit 1
   else
       # avoid nil value being added on the deployment file
-      sed -i "s|%{${variable}}||g" ${tmp_file}
+      ${sed}  -i "s|%{${variable}}||g" ${tmp_file}
   fi
 }
 
@@ -597,7 +605,7 @@ replace_allvar() {
     OLDIFS=$IFS
     IFS=$(echo -en "\n\b")
     # find all the variables in the format %{}
-    for variable in $(grep -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
+    for variable in $(${grep} -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
     do
         # restore the old IFS
         IFS=$OLDIFS
@@ -616,7 +624,7 @@ replace_allvar() {
           then
             check_var_fail_safe "$($hr) "
           else
-           sed -i "s|%{${variable}}|${aws_var}|g" ${tmp_file}
+           ${sed}  -i "s|%{${variable}}|${aws_var}|g" ${tmp_file}
           fi
         # check for aws sm variables from the deployment files
         elif [[ "$variable" =~ "${aws_sm_prefix}" ]]
@@ -626,7 +634,7 @@ replace_allvar() {
             then
               check_var_fail_safe "${variable} "
             else
-             sed -i -e "s|%{${variable}}|${aws_var}|g" ${tmp_file}
+             ${sed}  -i -e "s|%{${variable}}|${aws_var}|g" ${tmp_file}
             fi
         # if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
         elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]] && [[ ! "$($hr)" =~ "${aws_sm_prefix}" ]]
@@ -636,7 +644,7 @@ replace_allvar() {
         elif [[ "$($hr)" =~ '=>' ]]
         then
             # counting the number of the same variable
-            for each in $(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
+            for each in $(${grep} -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
             do
                 variable_line_nr+="${each} "
             done
@@ -644,15 +652,15 @@ replace_allvar() {
             for i in ${variable_line_nr[@]}
             do
                 # getting the new line of the variable
-                var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
+                var_line=$(${grep} -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
                 var_file=$(mktemp /tmp/k8comp.XXXXXX)
                 if [ ! -z ${var_line} ]
                 then
-                    leading_spaces=$(($(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')-1))
+                    leading_spaces=$(($(${sed}  -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')-1))
                     add_leading_spaces=$(printf %${leading_spaces}s)
-                    $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
+                    $hr -f yaml | tail -n +2 | ${sed}  -e "s/^/${add_leading_spaces}/" > $var_file
                     # delete line
-                    sed -i "${var_line}d" ${tmp_file}
+                    ${sed}  -i "${var_line}d" ${tmp_file}
                     add_multiline_var ${tmp_file} ${var_line} ${var_file}
                 fi
                 if [ -f $var_file ]
@@ -663,19 +671,19 @@ replace_allvar() {
             # if there is no hiera value and default is available use the default value
         elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" != "${variable##* default }" ]]
         then
-            sed -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
+            ${sed}  -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
         else
-            sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
+            ${sed}  -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
         fi
     done
 }
 
 external_files() {
-    urls=$(grep '^http' ${tmp_file})
+    urls=$(${grep} '^http' ${tmp_file})
 
     for u in ${urls}
     do
-        sed -i "s|${u}||g" ${tmp_file}
+        ${sed}  -i "s|${u}||g" ${tmp_file}
         ext=$(curl -qs ${u})
         if [[ "${ext} | head -1" =~ "---" ]]
         then
@@ -726,7 +734,7 @@ print_file() {
     notification+="Deployment from ${xfile}"
     border="######################"
     # print file on stdout
-    cat ${tmp_file} | sed '/^$/d'
+    cat ${tmp_file} | ${sed}  '/^$/d'
     # echo notification
     echo ${border}
     echo ""

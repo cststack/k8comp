@@ -33,8 +33,8 @@ gem install --no-ri --no-rdoc hiera-eyaml hiera
 (alpha)
 ```
 gem install --no-ri --no-rdoc hiera-eyaml hiera
-ln -sfn $(which hiera) /usr/local/bin/hiera
-brew install gnu-sed --with-default-names
-brew install grep --with-default-names
-brew install ed --with-default-names
+brew install gnu-sed
+brew install grep
+brew install ed
+brew install coreutils
 ```
