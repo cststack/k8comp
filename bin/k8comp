@@ -319,12 +319,6 @@ aws_sm_function () {
       aws_sm_secret=$(echo "${aws_sm_secret}" | grep -w ${nv3##*:} | awk '{print $2}' | sed s/\"//g )
     fi
 
-    # if [ "${aws_sm_secret}" = "" ]
-    # then
-    #   # echo "NOT-FOUND"
-    #   echo ${aws_sm_secret}
-    #   nf_var+="$1 "
-    # el
     if [[ "${nv2}" =~ "BASE64" ]]
     then
       convert_to_base64 "${aws_sm_secret}"
