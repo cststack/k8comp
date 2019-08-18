@@ -641,6 +641,7 @@ version: ${helmpv}" > ./${helm_package_name}/Chart.yaml
         message_green "helm chart: ${helm_package_name}-${helmpv}"
     else
         error "there are some errors with your current deployment"
+        exit 1
     fi
     if [ -d ./${helm_package_name} ]
     then
