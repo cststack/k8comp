@@ -327,17 +327,55 @@ convert_to_base64 () {
 }
 
 aws_sm_function () {
+    # get the first part of the variable after the aws_sm_prefix
     nv=${1##*(}
+    # get the variable without ) end
     nv2=${nv%?}
+    # get the variable without any prefixes like BASE64
     nv3=${nv2##*BASE64,}
-    nv4=${nv3%%:*}
-    aws_sm_secret=$(aws secretsmanager get-secret-value ${aws_assume_role_profile} --query SecretString --secret-id $nv4 --version-stage AWSCURRENT --output text)
+    get_secret=$nv3
 
-    if [[ "${nv2}" =~ ":" ]]
+    # test if the regions can be extracted from the variable/if the variable is a full arn
+    if echo $nv3 | awk -F: '{print $4}' | ${grep} -qE "[a-z]"
     then
-      aws_sm_secret=$(echo "${aws_sm_secret}" | ${grep} -w ${nv3##*:} | awk '{print $2}' | ${sed}  s/\"//g )
+      # set the region from the arn of the variable
+      region="--region $(echo $nv3 | awk -F: '{print $4}')"
+      # test if from the secret a single value should be extracted
+      if echo $nv3 | awk -F: '{print $8}' | ${grep} -qE "[a-zA-Z]"
+      then
+        # a single value should be extracted from the secret
+        extract_var="$(echo $nv3 | awk -F: '{print $8}')"
+        # redefine the secret name which should be retrieved. Remove the value of the single variable which should be extracted and remove also the last : which sits in front of the single value
+        get_secret=$(echo $nv3 | ${sed} "s|${extract_var}||g" | ${sed} "s|:$||" )
+      fi
+    # if the secret is not the full arn test if a single value of the secret should be extracted
+    elif [[ "${nv3}" =~ ":" ]]
+    then
+      # get the value of the single string which needs to be extracted from the secret
+      extract_var="$(echo $nv3 | awk -F: '{print $2}')"
+      # remove from the secret name the single value which should be extracted
+      get_secret=${nv3%%:*}
     fi
 
+    aws_sm_secret=$(aws secretsmanager get-secret-value ${aws_assume_role_profile} ${region} --query SecretString --secret-id ${get_secret} --output text)
+
+    # test if the single value from the secret exists
+    if [ "${extract_var}" != "" ]
+    then
+      # get the single value from the secret
+      aws_sm_secret=$(echo "${aws_sm_secret}" | ${grep} ${extract_var})
+      # if the delimiter is a :, if the secret is a json file then extract the single value of the secret
+      if [[ "$aws_sm_secret" =~ ":" ]]
+      then
+        aws_sm_secret=$(echo "${aws_sm_secret}" | awk -F: '{print $2}')
+      # if the delimiter is a = then extract the single value of the secret format should be SECRET=NAME
+      elif [[ "$aws_sm_secret" =~ "=" ]]
+      then
+        aws_sm_secret=$(echo "${aws_sm_secret}" | awk -F= '{print $2}')
+      fi
+    fi
+
+    # test if the secret should be converted to base64
     if [[ "${nv2}" =~ "BASE64" ]]
     then
       convert_to_base64 "${aws_sm_secret}"
