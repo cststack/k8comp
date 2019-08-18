@@ -620,6 +620,13 @@ external_files() {
     done
 }
 
+clean_helm_package(){
+  if [ -d ./${1} ]
+  then
+      rm -rf ./${1}
+  fi
+}
+
 helm_output() {
     helm_package_name=$(echo ${template} ${project} ${application} ${location} ${environment} | tr " " "-")
     if [ -z ${helm_package_version} ]
@@ -641,12 +648,10 @@ version: ${helmpv}" > ./${helm_package_name}/Chart.yaml
         message_green "helm chart: ${helm_package_name}-${helmpv}"
     else
         error "there are some errors with your current deployment"
+        clean_helm_package ${helm_package_name}
         exit 1
     fi
-    if [ -d ./${helm_package_name} ]
-    then
-        rm -rf ./${helm_package_name}
-    fi
+    clean_helm_package ${helm_package_name}
 }
 
 print_file() {
