@@ -1,6 +1,6 @@
 #!/bin/bash
 set +x
-version=0.6.1
+version=0.6.2-beta1
 
 if [ -z ${k8comp_dir} ]
 then
@@ -16,6 +16,7 @@ auto_git_pull=false #git pull before each deployment
 main_deployment_branch=master #works in conjunction with `k8comp_environment`
 projects_repo= #works in conjunction with `auto_git_pull`
 hieradata_repo= #works in conjunction with `auto_git_pull`
+aws_sm_prefix=AWSSM #the prefix for the AWS Secrets Manager variables
 
 # Added option to load k8comp.conf dynamically
 if [ -f ${k8comp_dir}/k8comp.conf ]
@@ -148,6 +149,9 @@ usage() {
                                          For pulling via ssh make sure the private key is available
                                          on the server/container.
 
+ --profile | -arp | -aarp                Specify the AWS IAM profile to be used for AWS Secrets manager
+                                         secrets retrieval
+
  Examples:
   k8comp pull
   k8comp pull -b test_branch
@@ -162,6 +166,8 @@ usage() {
 
   k8comp -t ingress -a application -e environment
   k8comp -t redirects/ingress -a application -e environment
+
+  k8comp -p project -a application -e environment --profile development
 
   k8comp -p project -a application -e development -x var1=value1 -x var2=value2 | kubectl create -f -
   k8comp -p project -a application -x var1=value1 -x var2=value2 | kubectl apply -f -
@@ -267,6 +273,12 @@ while [ $# -gt 0 ]; do
                 shift
             fi
             ;;
+        -aarp|-arp|--aws-assume-role-profile|--profile|-profile)
+            if [ -n "$2" ]; then
+                aws_assume_role_profile="--profile ${2}"
+                shift
+            fi
+            ;;
         -x|--xtra|xtra)
             read_x_args "${@:2}"
             ;;
@@ -294,6 +306,84 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Darwin*)
+      base64=gbase64
+      ed=ged
+      sed=gsed
+      grep=ggrep
+      ;;
+    *)
+      base64=base64
+      ed=ed
+      sed=sed
+      grep=grep
+      ;;
+esac
+
+convert_to_base64 () {
+  echo "$1" | ${base64} -w 0
+}
+
+aws_sm_function () {
+    # get the first part of the variable after the aws_sm_prefix
+    nv=${1##*(}
+    # get the variable without ) end
+    nv2=${nv%?}
+    # get the variable without any prefixes like BASE64
+    nv3=${nv2##*BASE64,}
+    get_secret=$nv3
+
+    # test if the regions can be extracted from the variable/if the variable is a full arn
+    if echo $nv3 | awk -F: '{print $4}' | ${grep} -qE "[a-z]"
+    then
+      # set the region from the arn of the variable
+      region="--region $(echo $nv3 | awk -F: '{print $4}')"
+      # test if from the secret a single value should be extracted
+      if echo $nv3 | awk -F: '{print $8}' | ${grep} -qE "[a-zA-Z]"
+      then
+        # a single value should be extracted from the secret
+        extract_var="$(echo $nv3 | awk -F: '{print $8}')"
+        # redefine the secret name which should be retrieved. Remove the value of the single variable which should be extracted and remove also the last : which sits in front of the single value
+        get_secret=$(echo $nv3 | ${sed} "s|${extract_var}||g" | ${sed} "s|:$||" )
+      fi
+    # if the secret is not the full arn test if a single value of the secret should be extracted
+    elif [[ "${nv3}" =~ ":" ]]
+    then
+      # get the value of the single string which needs to be extracted from the secret
+      extract_var="$(echo $nv3 | awk -F: '{print $2}')"
+      # remove from the secret name the single value which should be extracted
+      get_secret=${nv3%%:*}
+    fi
+
+    aws_sm_secret=$(aws secretsmanager get-secret-value ${aws_assume_role_profile} ${region} --query SecretString --secret-id ${get_secret} --output text)
+
+    # test if the single value from the secret exists
+    if [ "${extract_var}" != "" ]
+    then
+      # get the single value from the secret
+      aws_sm_secret=$(echo "${aws_sm_secret}" | ${grep} ${extract_var})
+      # if the delimiter is a :, if the secret is a json file then extract the single value of the secret
+      if [[ "$aws_sm_secret" =~ ":" ]]
+      then
+        aws_sm_secret=$(echo "${aws_sm_secret}" | awk -F: '{print $2}')
+      # if the delimiter is a = then extract the single value of the secret format should be SECRET=NAME
+      elif [[ "$aws_sm_secret" =~ "=" ]]
+      then
+        aws_sm_secret=$(echo "${aws_sm_secret}" | awk -F= '{print $2}')
+      fi
+    fi
+
+    # test if the secret should be converted to base64
+    if [[ "${nv2}" =~ "BASE64" ]]
+    then
+      convert_to_base64 "${aws_sm_secret}"
+    else
+      echo "${aws_sm_secret}"
+    fi
+}
+
 # function used only to pull specific branches as environments
 git_pull_only () {
     if [ $pull ] && [ ${projects_repo} ]
@@ -308,7 +398,7 @@ git_pull_only () {
 }
 
 clone_git () {
-    if ! grep -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
+    if ! ${grep} -sq "$1" $projects_path/environments/${branch:-${main_deployment_branch}}/${2}/.git/config
     then
         rm -rf $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
         if ! git clone --quiet $1 $projects_path/environments/${branch:-${main_deployment_branch}}/${2}
@@ -354,7 +444,7 @@ set_environments() {
 kube_vars(){
     for i in ${hrall[@]}
     do
-        find_var=$(grep -vs '^#' $mapping/* | grep -h "^${i##*=}=")
+        find_var=$(${grep} -vs '^#' $mapping/* | ${grep} -h "^${i##*=}=")
         # all variables form extras/mapping will be passed to hiera via mappings variable
         mappings+=($find_var)
         if [[ "${i%%=*}" == "project" ]]
@@ -496,23 +586,23 @@ create_tmp() {
     do
         if [[ "$(head -1 ${eachfile})" =~ "---" ]]
         then
-            grep -v '^#' ${eachfile} >> ${tmp_file}
+            ${grep} -v '^#' ${eachfile} >> ${tmp_file}
         else
             echo -e "\n---" >> ${tmp_file}
-            grep -v '^#' ${eachfile} >> ${tmp_file}
+            ${grep} -v '^#' ${eachfile} >> ${tmp_file}
         fi
     done
     echo " " >> ${tmp_file}
 }
 
 replace_var() {
-    sed -i "s|%{project}|${h_project}|g" ${tmp_file}
-    sed -i "s|%{application}|${h_application}|g" ${tmp_file}
-    sed -i "s|%{environment}|${h_environment}|g" ${tmp_file}
-    sed -i "s|%{product}|${h_product}|g" ${tmp_file}
-    sed -i "s|%{role}|${h_role}|g" ${tmp_file}
-    sed -i "s|%{namespace}|${h_namespace}|g" ${tmp_file}
-    sed -i "s|%{location}|${h_location}|g" ${tmp_file}
+    ${sed}  -i "s|%{project}|${h_project}|g" ${tmp_file}
+    ${sed}  -i "s|%{application}|${h_application}|g" ${tmp_file}
+    ${sed}  -i "s|%{environment}|${h_environment}|g" ${tmp_file}
+    ${sed}  -i "s|%{product}|${h_product}|g" ${tmp_file}
+    ${sed}  -i "s|%{role}|${h_role}|g" ${tmp_file}
+    ${sed}  -i "s|%{namespace}|${h_namespace}|g" ${tmp_file}
+    ${sed}  -i "s|%{location}|${h_location}|g" ${tmp_file}
 }
 
 replace_xvar() {
@@ -521,13 +611,13 @@ replace_xvar() {
         # avoind any conflicts when the variable include = character
         xvar2=$(echo ${xvar} | cut -c $(($(echo ${xvar%%=*} | awk '{ print length }')+2))-)
         # owerwrite variables with defaults with xtra variables declared on cmd
-        xvar_new_value=$(grep -oP '\%{\K[^\}]+' ${tmp_file} | grep -w ${xvar%%=*} |uniq)
-        sed -i "s|%{${xvar_new_value}}|${xvar2}|g" ${tmp_file}
+        xvar_new_value=$(${grep} -oP '\%{\K[^\}]+' ${tmp_file} | ${grep} -w ${xvar%%=*} |uniq)
+        ${sed}  -i "s|%{${xvar_new_value}}|${xvar2}|g" ${tmp_file}
     done
 }
 
 add_multiline_var () {
-ed ${1}  > /dev/null 2>&1 << __EOF__
+${ed} ${1}  > /dev/null 2>&1 << __EOF__
 ${2}i
 $(cat ${3})
 .
@@ -535,12 +625,25 @@ wq
 __EOF__
 }
 
+check_var_fail_safe () {
+  nf_var+="$1 "
+  if [ "$var_fail_safe" == "true" ]
+  then
+      error "${variable%% default *} not found in hiera"
+      clean
+      exit 1
+  else
+      # avoid nil value being added on the deployment file
+      ${sed}  -i "s|%{${variable}}||g" ${tmp_file}
+  fi
+}
+
 replace_allvar() {
     # set a different IFS in case the default variables have white spaces
     OLDIFS=$IFS
     IFS=$(echo -en "\n\b")
     # find all the variables in the format %{}
-    for variable in $(grep -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
+    for variable in $(${grep} -oP '\%{\K[^\}]+' ${tmp_file} |sort |uniq)
     do
         # restore the old IFS
         IFS=$OLDIFS
@@ -551,25 +654,35 @@ replace_allvar() {
         then
             hr="${hiera_path}/hiera -c ${query}"
         fi
-        # if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
-        if [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]]
+        # check for aws sm variables from hieradata
+        if [[ "$($hr)" =~ "${aws_sm_prefix}" ]]
         then
-            nf_var+="${variable%% default *} "
-            if [ "$var_fail_safe" == "true" ]
+          aws_var=$(aws_sm_function "$($hr)")
+          if [ "${aws_var}" = "" ] || [ "$aws_var" = "Cg==" ]
+          then
+            check_var_fail_safe "$($hr) "
+          else
+           ${sed}  -i "s|%{${variable}}|${aws_var}|g" ${tmp_file}
+          fi
+        # check for aws sm variables from the deployment files
+        elif [[ "$variable" =~ "${aws_sm_prefix}" ]]
+          then
+            aws_var=$(aws_sm_function "$variable")
+            if [ "${aws_var}" = "" ] || [ "$aws_var" = "Cg==" ]
             then
-                error "${variable%% default *} not found in hiera"
-                clean
-                exit 1
+              check_var_fail_safe "${variable} "
             else
-                # avoid nil value being added on the deployment file
-                sed -i "s|%{${variable}}||g" ${tmp_file}
+             ${sed}  -i -e "s|%{${variable}}|${aws_var}|g" ${tmp_file}
             fi
-
+        # if hiera variable is not found and no default value is set in the template add the variable in the final message with variables not found
+        elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" == "${variable##* default }" ]] && [[ ! "$($hr)" =~ "${aws_sm_prefix}" ]]
+        then
+          check_var_fail_safe "${variable%% default *} "
             # if variable has more lines
         elif [[ "$($hr)" =~ '=>' ]]
         then
             # counting the number of the same variable
-            for each in $(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
+            for each in $(${grep} -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}')
             do
                 variable_line_nr+="${each} "
             done
@@ -577,15 +690,15 @@ replace_allvar() {
             for i in ${variable_line_nr[@]}
             do
                 # getting the new line of the variable
-                var_line=$(grep -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
+                var_line=$(${grep} -wn "%{${variable}}" ${tmp_file} | awk -F ':' '{print $1}' | head -1)
                 var_file=$(mktemp /tmp/k8comp.XXXXXX)
                 if [ ! -z ${var_line} ]
                 then
-                    leading_spaces=$(($(sed -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')-1))
+                    leading_spaces=$(($(${sed}  -n ${var_line}p ${tmp_file} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i}')-1))
                     add_leading_spaces=$(printf %${leading_spaces}s)
-                    $hr -f yaml | tail -n +2 | sed -e "s/^/${add_leading_spaces}/" > $var_file
+                    $hr -f yaml | tail -n +2 | ${sed}  -e "s/^/${add_leading_spaces}/" > $var_file
                     # delete line
-                    sed -i "${var_line}d" ${tmp_file}
+                    ${sed}  -i "${var_line}d" ${tmp_file}
                     add_multiline_var ${tmp_file} ${var_line} ${var_file}
                 fi
                 if [ -f $var_file ]
@@ -596,19 +709,19 @@ replace_allvar() {
             # if there is no hiera value and default is available use the default value
         elif [ "$($hr)" = "nil" ] || [ -z "$($hr)" ] && [[ "${variable%% default *}" != "${variable##* default }" ]]
         then
-            sed -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
+            ${sed}  -i "s|%{${variable}}|${variable##* default }|g" ${tmp_file}
         else
-            sed -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
+            ${sed}  -i "s|%{${variable}}|$($hr)|g" ${tmp_file}
         fi
     done
 }
 
 external_files() {
-    urls=$(grep '^http' ${tmp_file})
+    urls=$(${grep} '^http' ${tmp_file})
 
     for u in ${urls}
     do
-        sed -i "s|${u}||g" ${tmp_file}
+        ${sed}  -i "s|${u}||g" ${tmp_file}
         ext=$(curl -qs ${u})
         if [[ "${ext} | head -1" =~ "---" ]]
         then
@@ -659,7 +772,7 @@ print_file() {
     notification+="Deployment from ${xfile}"
     border="######################"
     # print file on stdout
-    cat ${tmp_file} | sed '/^$/d'
+    cat ${tmp_file} | ${sed}  '/^$/d'
     # echo notification
     echo ${border}
     echo ""
